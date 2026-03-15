@@ -905,17 +905,26 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
       <!-- ADMIN / SETTINGS -->
       <div class="view" id="view-admin">
         <div class="admin-grid">
-          <div class="card"><div class="card-head"><span class="card-title">🔗 OneDrive Sync</span></div>
+          <div class="card"><div class="card-head"><span class="card-title">🔗 OneDrive Sync</span><span id="syncDesktopBadge" class="sbadge" style="font-size:9px"></span></div>
             <div class="card-body">
-              <div class="sync-status-row"><span class="sync-status-lbl">Folder</span><span class="sync-status-val" id="syncFolderName">Not linked</span></div>
-              <div class="sync-status-row"><span class="sync-status-lbl">Last sync</span><span class="sync-status-val" id="syncLastTime">—</span></div>
-              <div class="sync-status-row"><span class="sync-status-lbl">Status</span><span class="sync-status-val" id="syncStatusText">Idle</span></div>
-              <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
-                <button class="btn btn-primary btn-sm" onclick="linkFolder()">📁 Link Folder</button>
-                <button class="btn btn-ghost btn-sm" onclick="syncNow()">⟳ Sync Now</button>
-                <button class="btn btn-ghost btn-sm" onclick="loadFromDisk()">⬇ Pull</button>
+              <div id="syncMobileNotice" style="display:none;background:var(--amb-l);border:1px solid rgba(255,179,71,.25);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:var(--fs-xs);color:var(--amb);line-height:1.6;font-family:var(--mono)">
+                📱 <strong>Mobile browser detected.</strong><br>
+                The File System Access API is not supported on mobile browsers.<br><br>
+                <strong>To sync on mobile:</strong><br>
+                1. Export JSON below and save to your OneDrive manually.<br>
+                2. On desktop, use Import JSON or Link Folder for full auto-sync.
               </div>
-              <div style="margin-top:11px;font-size:var(--fs-xs);color:var(--t4);line-height:1.7;font-family:var(--mono)">Atomic write: <span style="color:var(--acc3)">db.tmp → db.json</span>. OneDrive syncs automatically.</div>
+              <div id="syncDesktopPanel">
+                <div class="sync-status-row"><span class="sync-status-lbl">Folder</span><span class="sync-status-val" id="syncFolderName">Not linked</span></div>
+                <div class="sync-status-row"><span class="sync-status-lbl">Last sync</span><span class="sync-status-val" id="syncLastTime">—</span></div>
+                <div class="sync-status-row"><span class="sync-status-lbl">Status</span><span class="sync-status-val" id="syncStatusText">Idle</span></div>
+                <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
+                  <button class="btn btn-primary btn-sm" onclick="linkFolder()">📁 Link Folder</button>
+                  <button class="btn btn-ghost btn-sm" onclick="syncNow()">⟳ Sync Now</button>
+                  <button class="btn btn-ghost btn-sm" onclick="loadFromDisk()">⬇ Pull</button>
+                </div>
+                <div style="margin-top:11px;font-size:var(--fs-xs);color:var(--t4);line-height:1.7;font-family:var(--mono)">Atomic write: <span style="color:var(--acc3)">db.tmp → db.json</span>. OneDrive syncs automatically.</div>
+              </div>
             </div>
           </div>
           <div class="card"><div class="card-head"><span class="card-title">🔒 PIN & Security</span></div>
@@ -1400,8 +1409,29 @@ function applyState(s){if(!s||typeof s!=='object')return;
 function persist(){try{const s=getState();localStorage.setItem(LS_KEY,JSON.stringify(s));if(_fsDir)scheduleFileSave(s);updateBadges();}catch(e){if(e.name==='QuotaExceededError')toast('Storage full — link OneDrive.','warning');}}
 function loadFromLS(){try{const r=localStorage.getItem(LS_KEY);if(r){applyState(JSON.parse(r));return true;}}catch(e){}return false;}
 
+/* ═══ MOBILE DETECTION ═══ */
+const isMobile=()=>/Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)||('ontouchstart' in window&&navigator.maxTouchPoints>1);
+const hasFSAPI=()=>typeof window.showDirectoryPicker==='function';
+
+function initSyncUI(){
+  if(isMobile()||!hasFSAPI()){
+    const notice=document.getElementById('syncMobileNotice');
+    const panel=document.getElementById('syncDesktopPanel');
+    const badge=document.getElementById('syncDesktopBadge');
+    if(notice)notice.style.display='';
+    if(panel)panel.style.display='none';
+    if(badge){badge.textContent='Mobile';badge.style.background='var(--amb-l)';badge.style.color='var(--amb)';}
+  }
+}
+
 /* ═══ FILE SYSTEM (Atomic db.tmp → db.json) ═══ */
-async function linkFolder(){try{const dir=await window.showDirectoryPicker({mode:'readwrite',id:'clario51'});_fsDir=dir;localStorage.setItem(FS_DIR_KEY,dir.name);toast('Linked: '+dir.name,'success');updateSyncUI('ok',dir.name);await loadFromDisk();persist();}catch(e){if(e.name!=='AbortError')toast('Error: '+e.message,'error');}}
+async function linkFolder(){
+  if(isMobile()||!hasFSAPI()){
+    toast('File System API not supported on mobile. Use Export/Import JSON instead.','warning');
+    return;
+  }
+  try{const dir=await window.showDirectoryPicker({mode:'readwrite',id:'clario51'});_fsDir=dir;localStorage.setItem(FS_DIR_KEY,dir.name);toast('Linked: '+dir.name,'success');updateSyncUI('ok',dir.name);await loadFromDisk();persist();}catch(e){if(e.name!=='AbortError')toast('Error: '+e.message,'error');}
+}
 async function saveToFile(state){if(!_fsDir)return;if(_fsSaving){_fsSaveQ=state;return;}_fsSaving=true;updateSyncUI('syncing');try{const json=JSON.stringify(state,null,2);const tmp=await _fsDir.getFileHandle(DB_TMP,{create:true});const w1=await tmp.createWritable();await w1.write(json);await w1.close();const db=await _fsDir.getFileHandle(DB_FILE,{create:true});const w2=await db.createWritable();await w2.write(json);await w2.close();try{await _fsDir.removeEntry(DB_TMP);}catch(_){}const ts=new Date().toLocaleTimeString();updateSyncUI('ok',_fsDir.name);const el=g('syncLastTime');if(el)el.textContent=ts;localStorage.setItem('c51_lastSync',ts);}catch(e){updateSyncUI('error');toast('Save failed: '+e.message,'error');}finally{_fsSaving=false;if(_fsSaveQ){const q=_fsSaveQ;_fsSaveQ=null;saveToFile(q);}}}
 function scheduleFileSave(s){clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>saveToFile(s),800);}
 async function loadFromDisk(){if(!_fsDir){toast('No folder linked.','warning');return;}try{const fh=await _fsDir.getFileHandle(DB_FILE);const file=await fh.getFile();mergeRemote(JSON.parse(await file.text()));persist();renderView(currentView);toast('Pulled from '+DB_FILE,'success');}catch(e){if(e.name==='NotFoundError')toast('No db.json yet — will create on save.','info');else toast('Pull failed: '+e.message,'error');}}
@@ -1430,7 +1460,7 @@ function unlockApp(){for(let i=0;i<4;i++)g('pd'+i).className='pin-dot ok';setTim
 document.addEventListener('keydown',e=>{if(g('lockScreen').style.display==='none')return;if(e.key>='0'&&e.key<='9')pinKey(e.key);if(e.key==='Backspace')pinDel();});
 
 /* ═══ BOOT ═══ */
-function bootApp(){loadFromLS();restoreFolderLabel();initTheme();loadAISettings();rolloverOverdueTasks();setupRecurring();setupNoteAutoSave();scheduleShutdownPrompt();const sc=localStorage.getItem('c51_sbcol');if(sc==='1'){_sbCol=true;g('sidebar').classList.add('collapsed');}nav('dashboard',g('ni-dashboard'));updateBadges();}
+function bootApp(){loadFromLS();restoreFolderLabel();initTheme();loadAISettings();initSyncUI();rolloverOverdueTasks();setupRecurring();setupNoteAutoSave();scheduleShutdownPrompt();const sc=localStorage.getItem('c51_sbcol');if(sc==='1'){_sbCol=true;g('sidebar').classList.add('collapsed');}nav('dashboard',g('ni-dashboard'));updateBadges();}
 function restoreFolderLabel(){const name=localStorage.getItem(FS_DIR_KEY);if(name)updateSyncUI('idle',name+' (re-link in Settings)');}
 function rolloverOverdueTasks(){const td=today();if(localStorage.getItem('c51_rollover')===td)return;localStorage.setItem('c51_rollover',td);let n=0;tasks.filter(t=>!t.done&&!t.deleted&&!t.someday&&t.due&&t.due<td&&t.due>=addDays(td,-2)).forEach(t=>{t.due=td;t.updated_at=now();t.rolled=true;n++;});if(n>0){persist();toast(n+' task'+(n>1?'s':'')+' rolled to today.','info');}}
 
@@ -1793,7 +1823,7 @@ function restoreTrash(id,type){const item=trash.find(x=>x.id===id);if(!item)retu
 function emptyTrash(){showConfirm('Permanently delete all trash? Cannot undo.',()=>{trash=[];persist();renderTrash();toast('Trash emptied.','info');},'Empty Trash','Delete All');}
 
 /* ═══ ADMIN ═══ */
-function renderAdmin(){const k=g('orKey'),m=g('orModel');if(k)k.value=_orKey;if(m)m.value=_orModel;const fn=g('syncFolderName');if(fn)fn.textContent=localStorage.getItem(FS_DIR_KEY)||'Not linked';const lt=g('syncLastTime');if(lt)lt.textContent=localStorage.getItem('c51_lastSync')||'—';const auto=g('autoTheme');if(auto)auto.checked=localStorage.getItem(AUTO_THEME_KEY)!=='false';renderAuditLog();}
+function renderAdmin(){const k=g('orKey'),m=g('orModel');if(k)k.value=_orKey;if(m)m.value=_orModel;const fn=g('syncFolderName');if(fn)fn.textContent=localStorage.getItem(FS_DIR_KEY)||'Not linked';const lt=g('syncLastTime');if(lt)lt.textContent=localStorage.getItem('c51_lastSync')||'—';const auto=g('autoTheme');if(auto)auto.checked=localStorage.getItem(AUTO_THEME_KEY)!=='false';initSyncUI();renderAuditLog();}
 function renderAuditLog(){const el=g('auditLog');if(!el)return;const items=[...auditLog].reverse().slice(0,60);el.innerHTML=items.length?items.map(a=>`<div class="audit-row"><span class="audit-time">${new Date(a.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><span class="audit-action"><strong>${esc(a.action)}</strong>${a.detail?' — '+esc(a.detail):''}</span></div>`).join(''):'<div class="empty-state" style="padding:20px"><div class="empty-sub">No audit entries yet.</div></div>';}
 function changePin(){const cur=g('curPin').value,nw=g('newPin').value,conf=g('confPin').value;const stored=localStorage.getItem(PIN_KEY);if(stored&&hashPin(cur)!==stored){toast('Current PIN incorrect.','error');return;}if(nw.length!==4||!/^\d{4}$/.test(nw)){toast('PIN must be 4 digits.','warning');return;}if(nw!==conf){toast("PINs don't match.",'warning');return;}localStorage.setItem(PIN_KEY,hashPin(nw));['curPin','newPin','confPin'].forEach(id=>g(id).value='');toast('PIN updated.','success');}
 
