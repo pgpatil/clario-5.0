@@ -905,25 +905,70 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
       <!-- ADMIN / SETTINGS -->
       <div class="view" id="view-admin">
         <div class="admin-grid">
-          <div class="card"><div class="card-head"><span class="card-title">🔗 OneDrive Sync</span><span id="syncDesktopBadge" class="sbadge" style="font-size:9px"></span></div>
+          <!-- GITHUB GIST SYNC -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">☁️ GitHub Gist Sync</span>
+              <span id="gistStatusBadge" class="sbadge" style="font-size:9px"></span>
+            </div>
             <div class="card-body">
-              <div id="syncMobileNotice" style="display:none;background:var(--amb-l);border:1px solid rgba(255,179,71,.25);border-radius:var(--rs);padding:10px 12px;margin-bottom:12px;font-size:var(--fs-xs);color:var(--amb);line-height:1.6;font-family:var(--mono)">
-                📱 <strong>Mobile browser detected.</strong><br>
-                The File System Access API is not supported on mobile browsers.<br><br>
-                <strong>To sync on mobile:</strong><br>
-                1. Export JSON below and save to your OneDrive manually.<br>
-                2. On desktop, use Import JSON or Link Folder for full auto-sync.
+              <!-- Setup guide (shown when not connected) -->
+              <div id="gistSetupGuide" style="display:none;background:var(--acc-ll);border:1px solid var(--acc-l);border-radius:var(--rs);padding:11px 13px;margin-bottom:13px;font-size:var(--fs-xs);color:var(--t2);line-height:1.8;font-family:var(--mono)">
+                <div style="font-weight:700;color:var(--acc3);margin-bottom:6px">🚀 One-time setup (2 min):</div>
+                1. Go to <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--acc3)">github.com/settings/tokens</a><br>
+                2. Click <strong>Generate new token (classic)</strong><br>
+                3. Give it a name (e.g. "Clario") and tick <strong>gist</strong> scope only<br>
+                4. Click Generate → Copy the token → Paste below<br>
+                5. Click Connect — works on all devices forever ✓
+              </div>
+              <!-- Token input -->
+              <div id="gistConnectPanel">
+                <div class="form-row">
+                  <label class="form-label">GitHub Personal Access Token</label>
+                  <div style="display:flex;gap:7px">
+                    <input class="fi" type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex:1">
+                    <button class="btn btn-primary btn-sm" onclick="gistConnect()">Connect</button>
+                  </div>
+                  <div style="margin-top:5px;font-size:var(--fs-xs);color:var(--t4)">Only the <code style="color:var(--acc3)">gist</code> scope is needed. Token stored locally only.</div>
+                </div>
+              </div>
+              <!-- Connected state -->
+              <div id="gistConnectedPanel" style="display:none">
+                <div class="sync-status-row"><span class="sync-status-lbl">Gist ID</span><span class="sync-status-val" id="gistIdDisplay">—</span></div>
+                <div class="sync-status-row"><span class="sync-status-lbl">Last sync</span><span class="sync-status-val" id="gistLastSync">—</span></div>
+                <div class="sync-status-row"><span class="sync-status-lbl">Status</span><span class="sync-status-val" id="gistStatusText">Connected</span></div>
+                <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
+                  <button class="btn btn-primary btn-sm" onclick="gistPush()">⬆ Push to Gist</button>
+                  <button class="btn btn-ghost btn-sm" onclick="gistPull()">⬇ Pull from Gist</button>
+                  <button class="btn btn-danger btn-sm" onclick="gistDisconnect()">Disconnect</button>
+                </div>
+                <div style="margin-top:10px;font-size:var(--fs-xs);color:var(--t4);line-height:1.6;font-family:var(--mono)">
+                  Auto-sync: saves push automatically on every change. Pull to get data from another device.
+                </div>
+              </div>
+              <!-- Help toggle -->
+              <button class="btn btn-ghost btn-sm" style="margin-top:10px;font-size:var(--fs-xs)" onclick="gistToggleGuide()">
+                <span id="gistHelpTxt">📖 How to get a GitHub token</span>
+              </button>
+            </div>
+          </div>
+          <!-- DESKTOP FILE SYSTEM SYNC (desktop only) -->
+          <div class="card" id="desktopSyncCard">
+            <div class="card-head"><span class="card-title">🗂 Local Folder Sync <span style="font-size:9px;color:var(--t4)">(desktop only)</span></span></div>
+            <div class="card-body">
+              <div id="syncMobileNotice" style="display:none;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rs);padding:9px 12px;font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">
+                Not available on mobile — use GitHub Gist Sync above.
               </div>
               <div id="syncDesktopPanel">
                 <div class="sync-status-row"><span class="sync-status-lbl">Folder</span><span class="sync-status-val" id="syncFolderName">Not linked</span></div>
                 <div class="sync-status-row"><span class="sync-status-lbl">Last sync</span><span class="sync-status-val" id="syncLastTime">—</span></div>
                 <div class="sync-status-row"><span class="sync-status-lbl">Status</span><span class="sync-status-val" id="syncStatusText">Idle</span></div>
-                <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
-                  <button class="btn btn-primary btn-sm" onclick="linkFolder()">📁 Link Folder</button>
+                <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+                  <button class="btn btn-ghost btn-sm" onclick="linkFolder()">📁 Link Folder</button>
                   <button class="btn btn-ghost btn-sm" onclick="syncNow()">⟳ Sync Now</button>
                   <button class="btn btn-ghost btn-sm" onclick="loadFromDisk()">⬇ Pull</button>
                 </div>
-                <div style="margin-top:11px;font-size:var(--fs-xs);color:var(--t4);line-height:1.7;font-family:var(--mono)">Atomic write: <span style="color:var(--acc3)">db.tmp → db.json</span>. OneDrive syncs automatically.</div>
+                <div style="margin-top:9px;font-size:var(--fs-xs);color:var(--t4);line-height:1.6;font-family:var(--mono)">Links to a local OneDrive folder. Atomic <span style="color:var(--acc3)">db.tmp → db.json</span> write.</div>
               </div>
             </div>
           </div>
@@ -1406,28 +1451,211 @@ function applyState(s){if(!s||typeof s!=='object')return;
   events=s.events||[];trash=s.trash||[];auditLog=(s.auditLog||[]).slice(-200);
   objectives=s.objectives||[];habits=s.habits||[];habitLog=s.habitLog||[];
   timeboxes=s.timeboxes||[];timerLog=s.timerLog||[];}
-function persist(){try{const s=getState();localStorage.setItem(LS_KEY,JSON.stringify(s));if(_fsDir)scheduleFileSave(s);updateBadges();}catch(e){if(e.name==='QuotaExceededError')toast('Storage full — link OneDrive.','warning');}}
+function persist(){try{const s=getState();localStorage.setItem(LS_KEY,JSON.stringify(s));if(_fsDir)scheduleFileSave(s);scheduleGistPush();updateBadges();}catch(e){if(e.name==='QuotaExceededError')toast('Storage full — link OneDrive.','warning');}}
 function loadFromLS(){try{const r=localStorage.getItem(LS_KEY);if(r){applyState(JSON.parse(r));return true;}}catch(e){}return false;}
 
 /* ═══ MOBILE DETECTION ═══ */
 const isMobile=()=>/Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)||('ontouchstart' in window&&navigator.maxTouchPoints>1);
 const hasFSAPI=()=>typeof window.showDirectoryPicker==='function';
 
-function initSyncUI(){
-  if(isMobile()||!hasFSAPI()){
-    const notice=document.getElementById('syncMobileNotice');
-    const panel=document.getElementById('syncDesktopPanel');
-    const badge=document.getElementById('syncDesktopBadge');
-    if(notice)notice.style.display='';
-    if(panel)panel.style.display='none';
-    if(badge){badge.textContent='Mobile';badge.style.background='var(--amb-l)';badge.style.color='var(--amb)';}
+/* ═══ GITHUB GIST SYNC ENGINE ═══ */
+const GIST_TOKEN_KEY='c51_gist_token';
+const GIST_ID_KEY='c51_gist_id';
+const GIST_FILENAME='clario51_db.json';
+let _gistToken='';
+let _gistId='';
+let _gistAutoSaveTimer=null;
+
+function gistInit(){
+  _gistToken=localStorage.getItem(GIST_TOKEN_KEY)||'';
+  _gistId=localStorage.getItem(GIST_ID_KEY)||'';
+  const tokenInput=g('gistToken');
+  if(tokenInput&&_gistToken)tokenInput.value=_gistToken;
+}
+
+function gistUpdateUI(){
+  const connected=!!_gistToken;
+  const connectPanel=g('gistConnectPanel');
+  const connectedPanel=g('gistConnectedPanel');
+  const badge=g('gistStatusBadge');
+  const idDisplay=g('gistIdDisplay');
+  if(connectPanel)connectPanel.style.display=connected?'none':'';
+  if(connectedPanel)connectedPanel.style.display=connected?'':'none';
+  if(badge){
+    badge.textContent=connected?'Connected':'Not connected';
+    badge.style.background=connected?'var(--grn-l)':'var(--surf3)';
+    badge.style.color=connected?'var(--grn)':'var(--t4)';
+  }
+  if(idDisplay)idDisplay.textContent=_gistId?_gistId.slice(0,16)+'…':'Creating on first push…';
+  // Also update topbar sync pill
+  updateSyncUI(connected?'ok':'idle', connected?'Gist':'Not linked');
+}
+
+function gistToggleGuide(){
+  const guide=g('gistSetupGuide');
+  const helpTxt=g('gistHelpTxt');
+  if(!guide)return;
+  const showing=guide.style.display!=='none';
+  guide.style.display=showing?'none':'';
+  if(helpTxt)helpTxt.textContent=showing?'📖 How to get a GitHub token':'🔼 Hide guide';
+}
+
+async function gistConnect(){
+  const tokenInput=g('gistToken');
+  const token=(tokenInput?.value||'').trim();
+  if(!token){toast('Please enter your GitHub token.','warning');return;}
+  if(!token.startsWith('ghp_')&&!token.startsWith('github_pat_')&&token.length<20){
+    toast('Token looks invalid. Should start with ghp_ or github_pat_','warning');return;
+  }
+  // Verify token by hitting GitHub API
+  const statusEl=g('gistStatusText');
+  if(statusEl)statusEl.textContent='Verifying…';
+  try{
+    const res=await fetch('https://api.github.com/user',{
+      headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      toast('Token invalid: '+(err.message||'Check your token and try again.'),'error');
+      if(statusEl)statusEl.textContent='Invalid token';
+      return;
+    }
+    const user=await res.json();
+    _gistToken=token;
+    localStorage.setItem(GIST_TOKEN_KEY,token);
+    toast(`Connected as ${user.login} ✓`,'success');
+    gistUpdateUI();
+    // Auto-push on first connect
+    await gistPush();
+  }catch(e){
+    toast('Connection failed: '+e.message,'error');
+    if(statusEl)statusEl.textContent='Error';
   }
 }
 
-/* ═══ FILE SYSTEM (Atomic db.tmp → db.json) ═══ */
+async function gistPush(){
+  if(!_gistToken){toast('Not connected to GitHub.','warning');return;}
+  const statusEl=g('gistStatusText');
+  const lastSyncEl=g('gistLastSync');
+  if(statusEl)statusEl.textContent='Pushing…';
+  updateSyncUI('syncing');
+  try{
+    const content=JSON.stringify(getState(),null,2);
+    let res;
+    if(_gistId){
+      // Update existing gist
+      res=await fetch(`https://api.github.com/gists/${_gistId}`,{
+        method:'PATCH',
+        headers:{'Authorization':'token '+_gistToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+        body:JSON.stringify({files:{[GIST_FILENAME]:{content}}})
+      });
+    } else {
+      // Create new private gist
+      res=await fetch('https://api.github.com/gists',{
+        method:'POST',
+        headers:{'Authorization':'token '+_gistToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+        body:JSON.stringify({description:'Clario 5.1 sync data',public:false,files:{[GIST_FILENAME]:{content}}})
+      });
+    }
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err.message||'Push failed ('+res.status+')');
+    }
+    const data=await res.json();
+    if(!_gistId){
+      _gistId=data.id;
+      localStorage.setItem(GIST_ID_KEY,_gistId);
+      gistUpdateUI();
+    }
+    const ts=new Date().toLocaleTimeString();
+    if(statusEl)statusEl.textContent='Synced';
+    if(lastSyncEl)lastSyncEl.textContent=ts;
+    localStorage.setItem('c51_gistLastSync',ts);
+    updateSyncUI('ok','Gist synced');
+  }catch(e){
+    if(statusEl)statusEl.textContent='Push failed';
+    updateSyncUI('error');
+    toast('Gist push failed: '+e.message,'error');
+  }
+}
+
+async function gistPull(){
+  if(!_gistToken||!_gistId){toast('Not connected or no Gist ID yet. Push first.','warning');return;}
+  const statusEl=g('gistStatusText');
+  if(statusEl)statusEl.textContent='Pulling…';
+  updateSyncUI('syncing');
+  try{
+    const res=await fetch(`https://api.github.com/gists/${_gistId}`,{
+      headers:{'Authorization':'token '+_gistToken,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err.message||'Pull failed ('+res.status+')');
+    }
+    const data=await res.json();
+    const file=data.files?.[GIST_FILENAME];
+    if(!file)throw new Error(`File "${GIST_FILENAME}" not found in Gist.`);
+    // Fetch raw content (may be truncated in API response)
+    let content=file.content;
+    if(file.truncated){
+      const rawRes=await fetch(file.raw_url);
+      content=await rawRes.text();
+    }
+    const remote=JSON.parse(content);
+    mergeRemote(remote);
+    persist();
+    renderView(currentView);
+    const ts=new Date().toLocaleTimeString();
+    if(statusEl)statusEl.textContent='Synced';
+    if(g('gistLastSync'))g('gistLastSync').textContent=ts;
+    localStorage.setItem('c51_gistLastSync',ts);
+    updateSyncUI('ok','Gist synced');
+    toast('Pulled from Gist ✓','success');
+  }catch(e){
+    if(statusEl)statusEl.textContent='Pull failed';
+    updateSyncUI('error');
+    toast('Gist pull failed: '+e.message,'error');
+  }
+}
+
+function gistDisconnect(){
+  showConfirm('Disconnect GitHub Gist? Your local data stays intact.',()=>{
+    _gistToken='';_gistId='';
+    localStorage.removeItem(GIST_TOKEN_KEY);
+    localStorage.removeItem(GIST_ID_KEY);
+    const inp=g('gistToken');if(inp)inp.value='';
+    gistUpdateUI();
+    updateSyncUI('idle','Not linked');
+    toast('Disconnected from GitHub Gist.','info');
+  },'Disconnect Gist','Disconnect');
+}
+
+// Auto-push after every persist — debounced 3s
+function scheduleGistPush(){
+  if(!_gistToken)return;
+  clearTimeout(_gistAutoSaveTimer);
+  _gistAutoSaveTimer=setTimeout(()=>gistPush(),3000);
+}
+
+/* ═══ FILE SYSTEM (Atomic db.tmp → db.json, desktop only) ═══ */
+function initSyncUI(){
+  gistInit();
+  gistUpdateUI();
+  // Last sync time
+  const ts=localStorage.getItem('c51_gistLastSync');
+  if(ts&&g('gistLastSync'))g('gistLastSync').textContent=ts;
+  if(isMobile()||!hasFSAPI()){
+    const notice=g('syncMobileNotice');
+    const panel=g('syncDesktopPanel');
+    const card=g('desktopSyncCard');
+    if(notice)notice.style.display='';
+    if(panel)panel.style.display='none';
+  }
+}
+
 async function linkFolder(){
   if(isMobile()||!hasFSAPI()){
-    toast('File System API not supported on mobile. Use Export/Import JSON instead.','warning');
+    toast('File System API not supported on mobile — use GitHub Gist Sync instead.','warning');
     return;
   }
   try{const dir=await window.showDirectoryPicker({mode:'readwrite',id:'clario51'});_fsDir=dir;localStorage.setItem(FS_DIR_KEY,dir.name);toast('Linked: '+dir.name,'success');updateSyncUI('ok',dir.name);await loadFromDisk();persist();}catch(e){if(e.name!=='AbortError')toast('Error: '+e.message,'error');}
@@ -1823,7 +2051,7 @@ function restoreTrash(id,type){const item=trash.find(x=>x.id===id);if(!item)retu
 function emptyTrash(){showConfirm('Permanently delete all trash? Cannot undo.',()=>{trash=[];persist();renderTrash();toast('Trash emptied.','info');},'Empty Trash','Delete All');}
 
 /* ═══ ADMIN ═══ */
-function renderAdmin(){const k=g('orKey'),m=g('orModel');if(k)k.value=_orKey;if(m)m.value=_orModel;const fn=g('syncFolderName');if(fn)fn.textContent=localStorage.getItem(FS_DIR_KEY)||'Not linked';const lt=g('syncLastTime');if(lt)lt.textContent=localStorage.getItem('c51_lastSync')||'—';const auto=g('autoTheme');if(auto)auto.checked=localStorage.getItem(AUTO_THEME_KEY)!=='false';initSyncUI();renderAuditLog();}
+function renderAdmin(){const k=g('orKey'),m=g('orModel');if(k)k.value=_orKey;if(m)m.value=_orModel;const fn=g('syncFolderName');if(fn)fn.textContent=localStorage.getItem(FS_DIR_KEY)||'Not linked';const lt=g('syncLastTime');if(lt)lt.textContent=localStorage.getItem('c51_lastSync')||'—';const auto=g('autoTheme');if(auto)auto.checked=localStorage.getItem(AUTO_THEME_KEY)!=='false';initSyncUI();const inp=g('gistToken');if(inp&&_gistToken)inp.value=_gistToken;renderAuditLog();}
 function renderAuditLog(){const el=g('auditLog');if(!el)return;const items=[...auditLog].reverse().slice(0,60);el.innerHTML=items.length?items.map(a=>`<div class="audit-row"><span class="audit-time">${new Date(a.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><span class="audit-action"><strong>${esc(a.action)}</strong>${a.detail?' — '+esc(a.detail):''}</span></div>`).join(''):'<div class="empty-state" style="padding:20px"><div class="empty-sub">No audit entries yet.</div></div>';}
 function changePin(){const cur=g('curPin').value,nw=g('newPin').value,conf=g('confPin').value;const stored=localStorage.getItem(PIN_KEY);if(stored&&hashPin(cur)!==stored){toast('Current PIN incorrect.','error');return;}if(nw.length!==4||!/^\d{4}$/.test(nw)){toast('PIN must be 4 digits.','warning');return;}if(nw!==conf){toast("PINs don't match.",'warning');return;}localStorage.setItem(PIN_KEY,hashPin(nw));['curPin','newPin','confPin'].forEach(id=>g(id).value='');toast('PIN updated.','success');}
 
