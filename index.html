@@ -1266,7 +1266,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="taskModalTitle">Add Task</span><button class="modal-close" onclick="closeModal('taskModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="t-title" placeholder="Task title…" onkeydown="if(event.key==='Enter')saveTask()"></div>
+      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="t-title" placeholder="Task title…" onkeydown="handleEnter(event,'saveTask()')" onkeyup="handleEnter(event,'saveTask()')"></div>
       <div class="form-row-2">
         <div><label class="form-label">Due Date</label><input class="fi" type="date" id="t-due"></div>
         <div><label class="form-label">Start Date (Defer)</label><input class="fi" type="date" id="t-start"></div>
@@ -1305,7 +1305,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="callModalTitle">Add Call</span><button class="modal-close" onclick="closeModal('callModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Contact Name *</label><input class="fi" id="c-name" placeholder="Name…" onkeydown="if(event.key==='Enter')saveCall()"></div>
+      <div class="form-row"><label class="form-label">Contact Name *</label><input class="fi" id="c-name" placeholder="Name…" onkeydown="handleEnter(event,'saveCall()')" onkeyup="handleEnter(event,'saveCall()')"></div>
       <div class="form-row-2">
         <div><label class="form-label">Phone</label><input class="fi" id="c-phone" placeholder="+91…"></div>
         <div><label class="form-label">Date &amp; Time</label><input class="fi" type="datetime-local" id="c-datetime"></div>
@@ -1332,7 +1332,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="projModalTitle">Add Project</span><button class="modal-close" onclick="closeModal('projModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="p-name" placeholder="Project name…" onkeydown="if(event.key==='Enter')saveProject()"></div>
+      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="p-name" placeholder="Project name…" onkeydown="handleEnter(event,'saveProject()')" onkeyup="handleEnter(event,'saveProject()')"></div>
       <div class="form-row"><label class="form-label">Description</label><textarea class="fi" id="p-desc" rows="2" placeholder="Brief description…"></textarea></div>
       <div class="form-row-2">
         <div><label class="form-label">Start Date</label><input class="fi" type="date" id="p-start"></div>
@@ -1405,7 +1405,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="eventModalTitle">Add Event</span><button class="modal-close" onclick="closeModal('eventModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="ev-title" placeholder="Event title…" onkeydown="if(event.key==='Enter')saveEvent()"></div>
+      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="ev-title" placeholder="Event title…" onkeydown="handleEnter(event,'saveEvent()')" onkeyup="handleEnter(event,'saveEvent()')"></div>
       <div class="form-row-2">
         <div><label class="form-label">Date</label><input class="fi" type="date" id="ev-date"></div>
         <div><label class="form-label">Time</label><input class="fi" type="time" id="ev-time"></div>
@@ -1431,7 +1431,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="personModalTitle">Add Person</span><button class="modal-close" onclick="closeModal('personModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Full Name *</label><input class="fi" id="pe-name" placeholder="Name…" onkeydown="if(event.key==='Enter')savePerson()"></div>
+      <div class="form-row"><label class="form-label">Full Name *</label><input class="fi" id="pe-name" placeholder="Name…" onkeydown="handleEnter(event,'savePerson()')" onkeyup="handleEnter(event,'savePerson()')"></div>
       <div class="form-row-2">
         <div><label class="form-label">Role</label><input class="fi" id="pe-role" placeholder="e.g. Sales Lead"></div>
         <div><label class="form-label">Department</label><select class="fi" id="pe-dept"><option value="">None</option></select></div>
@@ -1454,7 +1454,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="custModalTitle">Add Customer</span><button class="modal-close" onclick="closeModal('custModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="cu-name" placeholder="Contact name…" onkeydown="if(event.key==='Enter')saveCustomer()"></div>
+      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="cu-name" placeholder="Contact name…" onkeydown="handleEnter(event,'saveCustomer()')" onkeyup="handleEnter(event,'saveCustomer()')"></div>
       <div class="form-row"><label class="form-label">Company</label><input class="fi" id="cu-company" placeholder="Company name…"></div>
       <div class="form-row-2">
         <div><label class="form-label">Phone</label><input class="fi" id="cu-phone" placeholder="+91…"></div>
@@ -1475,7 +1475,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal" style="max-width:360px">
     <div class="modal-head"><span class="modal-title" id="deptModalTitle">Add Department</span><button class="modal-close" onclick="closeModal('deptModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="d-name" placeholder="e.g. Sales" onkeydown="if(event.key==='Enter')saveDept()"></div>
+      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="d-name" placeholder="e.g. Sales" onkeydown="handleEnter(event,'saveDept()')" onkeyup="handleEnter(event,'saveDept()')"></div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-danger btn-sm hidden" id="dDelBtn" onclick="deleteDept()">Delete</button>
@@ -1490,7 +1490,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="objModalTitle">Add Monthly Goal</span><button class="modal-close" onclick="closeModal('objModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Goal Title *</label><input class="fi" id="obj-title" placeholder="e.g. Close 5 new clients…" onkeydown="if(event.key==='Enter')saveObjective()"></div>
+      <div class="form-row"><label class="form-label">Goal Title *</label><input class="fi" id="obj-title" placeholder="e.g. Close 5 new clients…" onkeydown="handleEnter(event,'saveObjective()')" onkeyup="handleEnter(event,'saveObjective()')"></div>
       <div class="form-row"><label class="form-label">Description</label><textarea class="fi" id="obj-desc" rows="2" placeholder="What does success look like?"></textarea></div>
       <div class="form-row-2">
         <div><label class="form-label">Month</label><input class="fi" type="month" id="obj-month"></div>
@@ -1516,7 +1516,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal" style="max-width:380px">
     <div class="modal-head"><span class="modal-title">Add Habit</span><button class="modal-close" onclick="closeModal('habitModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Habit Name *</label><input class="fi" id="h-name" placeholder="e.g. Morning standup, Cold call 10 prospects…" onkeydown="if(event.key==='Enter')saveHabit()"></div>
+      <div class="form-row"><label class="form-label">Habit Name *</label><input class="fi" id="h-name" placeholder="e.g. Morning standup, Cold call 10 prospects…" onkeydown="handleEnter(event,'saveHabit()')" onkeyup="handleEnter(event,'saveHabit()')"></div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('habitModal')">Cancel</button>
@@ -1857,7 +1857,7 @@ function _qpClose(){closeQP();}
 function toast(msg,type='info'){const c=g('toastContainer');const t=document.createElement('div');t.className='toast '+type;const icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML=`<span>${icons[type]||'ℹ'}</span><span>${esc(msg)}</span>`;if(type==='error')t.onclick=()=>t.remove();c.appendChild(t);if(type!=='error')setTimeout(()=>t.remove(),3500);}
 let _confirmCb=null;
 function showConfirm(msg,cb,title='Confirm',label='Confirm'){g('confirmMsg').textContent=msg;g('confirmTitle').textContent=title;g('confirmOkBtn').textContent=label;_confirmCb=cb;openModal('confirmModal');}
-function confirmOk(){closeConfirm();if(_confirmCb)_confirmCb();}
+function confirmOk(){const cb=_confirmCb;closeConfirm();if(cb)cb();}
 function closeConfirm(){closeModal('confirmModal');_confirmCb=null;}
 function openModal(id){g(id).classList.add('open');}
 function closeModal(id){g(id).classList.remove('open');}
@@ -2507,6 +2507,23 @@ function setupRecurring(){const td=today();if(localStorage.getItem('c51_recurChe
 
 /* ═══ SHUTDOWN PROMPT ═══ */
 function scheduleShutdownPrompt(){const check=()=>{const h=new Date().getHours(),td=today();if(h>=18&&localStorage.getItem('c51_shutdown')!==td){const od=tasks.filter(t=>!t.done&&!t.deleted&&!t.someday&&t.due&&t.due<=td).length;if(od>0){showConfirm(`🌇 End of day — ${od} task${od>1?'s':''} still open. Review now?`,()=>nav('tasks',g('ni-tasks')),'Daily Shutdown','Review Tasks');localStorage.setItem('c51_shutdown',td);}}};setTimeout(check,3000);setInterval(check,30*60*1000);}
+
+/* ═══ ENTER KEY — cross-platform (mobile virtual keyboard safe) ═══ */
+let _lastEnterTime=0;
+function handleEnter(e, fnName){
+  const isEnter=e.key==='Enter'||e.keyCode===13||e.which===13;
+  if(!isEnter)return;
+  // Dedupe: keydown + keyup both fire, only run once per 150ms
+  const t=Date.now();
+  if(t-_lastEnterTime<150)return;
+  _lastEnterTime=t;
+  e.preventDefault();
+  e.stopPropagation();
+  // Resolve function by name string e.g. 'saveTask()'
+  const name=fnName.replace(/\(\)$/,'');
+  const fn=window[name];
+  if(typeof fn==='function')fn();
+}
 
 /* ═══ KEYBOARD SHORTCUTS ═══ */
 let _gPressed=false,_gTimer=null;
