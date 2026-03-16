@@ -548,6 +548,11 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
   .notes-list{display:none}
   .day-split{grid-template-columns:1fr}
   #aiPanel{width:100%}
+  /* Collapse topbar text labels on mobile — show emoji only */
+  .tb-btn .tb-label{display:none}
+  .tb-btn{padding:5px 7px;min-width:30px;justify-content:center}
+  /* Paste helper button */
+  .paste-btn{display:inline-flex!important}
 }
 
 /* UTILITIES */
@@ -561,6 +566,13 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
 .hidden{display:none!important}.w-full{width:100%}.flex-1{flex:1;min-width:0}
 .task-draggable{cursor:grab!important}
 .task-draggable:active{cursor:grabbing!important;opacity:.7}
+/* Code view modal */
+#codeViewModal .modal{width:96vw;max-width:900px;height:92vh;max-height:92vh;display:flex;flex-direction:column;}
+#codeViewContent mark{background:var(--amb-l);color:var(--amb);border-radius:2px;}
+/* Ensure text inputs work on mobile — no autocorrect interference */
+input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;user-select:text;}
+/* Paste button — hidden on desktop, shown on mobile via media query */
+.paste-btn{display:none;background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--rs);color:var(--t2);font-size:var(--fs-xs);padding:4px 9px;cursor:pointer;white-space:nowrap;font-weight:600;}
 
 .lock-gem{animation:gemGlow 3s ease infinite;}@keyframes gemGlow{0%,100%{filter:drop-shadow(0 0 12px rgba(108,99,255,0.5))}50%{filter:drop-shadow(0 0 24px rgba(168,85,247,0.7))}}
 </style>
@@ -640,9 +652,10 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
       </button>
       <span id="pageTitle">Dashboard</span>
       <div class="tb-spacer"></div>
-      <button class="tb-btn" onclick="openWeeklyWizard()" title="Weekly Review">📋 Weekly Review</button>
-      <button class="tb-btn" onclick="toggleZen()" id="zenBtn" title="Zen Mode [Ctrl+Z]">🧘 Zen</button>
-      <button class="tb-btn" onclick="toggleAIPanel()" id="aiBtn" title="AI Assistant [Ctrl+A]">🤖 AI</button>
+      <button class="tb-btn" onclick="openWeeklyWizard()" title="Weekly Review">📋 <span class="tb-label">Weekly Review</span></button>
+      <button class="tb-btn" onclick="toggleZen()" id="zenBtn" title="Zen Mode [Ctrl+Z]">🧘 <span class="tb-label">Zen</span></button>
+      <button class="tb-btn" onclick="toggleAIPanel()" id="aiBtn" title="AI Assistant [Ctrl+A]">🤖 <span class="tb-label">AI</span></button>
+      <button class="tb-icon" onclick="openCodeView()" title="View / copy source code" style="font-size:14px">⟨/⟩</button>
       <div id="syncPill" onclick="nav('admin',document.getElementById('ni-admin'))">
         <span class="sync-dot" id="syncDot2"></span><span id="syncPillLbl">Not linked</span>
       </div>
@@ -925,11 +938,24 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
               <div id="gistConnectPanel">
                 <div class="form-row">
                   <label class="form-label">GitHub Personal Access Token</label>
-                  <div style="display:flex;gap:7px">
-                    <input class="fi" type="password" id="gistToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex:1">
+                  <div style="display:flex;gap:7px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:200px;position:relative">
+                      <input class="fi" type="text" id="gistToken"
+                        placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                        autocomplete="off" autocorrect="off" autocapitalize="off"
+                        spellcheck="false"
+                        inputmode="text"
+                        style="width:100%;padding-right:36px;font-family:var(--mono);font-size:var(--fs-xs)">
+                      <button onclick="gistTokenToggleVis(this)"
+                        style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t4);cursor:pointer;font-size:13px;padding:2px"
+                        title="Show/hide token" id="gistEyeBtn">👁</button>
+                    </div>
+                    <button class="paste-btn" onclick="pasteToField('gistToken')" title="Paste from clipboard">📋 Paste</button>
                     <button class="btn btn-primary btn-sm" onclick="gistConnect()">Connect</button>
                   </div>
-                  <div style="margin-top:5px;font-size:var(--fs-xs);color:var(--t4)">Only the <code style="color:var(--acc3)">gist</code> scope is needed. Token stored locally only.</div>
+                  <div style="margin-top:6px;font-size:var(--fs-xs);color:var(--t4);line-height:1.6">
+                    Only the <code style="color:var(--acc3)">gist</code> scope is needed. Token stored locally, never sent anywhere except GitHub.
+                  </div>
                 </div>
               </div>
               <!-- Connected state -->
@@ -974,15 +1000,29 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
           </div>
           <div class="card"><div class="card-head"><span class="card-title">🔒 PIN & Security</span></div>
             <div class="card-body">
-              <div class="form-row"><label class="form-label">Current PIN</label><input class="fi" type="password" id="curPin" maxlength="4" placeholder="••••"></div>
-              <div class="form-row"><label class="form-label">New PIN</label><input class="fi" type="password" id="newPin" maxlength="4" placeholder="••••"></div>
-              <div class="form-row"><label class="form-label">Confirm</label><input class="fi" type="password" id="confPin" maxlength="4" placeholder="••••"></div>
+              <div class="form-row"><label class="form-label">Current PIN</label>
+                <div style="position:relative"><input class="fi" type="password" id="curPin" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="current-password" style="padding-right:36px"><button onclick="toggleFieldVis('curPin',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t4);cursor:pointer;font-size:13px" title="Show">👁</button></div>
+              </div>
+              <div class="form-row"><label class="form-label">New PIN</label>
+                <div style="position:relative"><input class="fi" type="password" id="newPin" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password" style="padding-right:36px"><button onclick="toggleFieldVis('newPin',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t4);cursor:pointer;font-size:13px" title="Show">👁</button></div>
+              </div>
+              <div class="form-row"><label class="form-label">Confirm</label>
+                <div style="position:relative"><input class="fi" type="password" id="confPin" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="new-password" style="padding-right:36px"><button onclick="toggleFieldVis('confPin',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t4);cursor:pointer;font-size:13px" title="Show">👁</button></div>
+              </div>
               <button class="btn btn-primary btn-sm" onclick="changePin()">Update PIN</button>
             </div>
           </div>
           <div class="card"><div class="card-head"><span class="card-title">🤖 AI — OpenRouter</span></div>
             <div class="card-body">
-              <div class="form-row"><label class="form-label">API Key</label><input class="fi" type="password" id="orKey" placeholder="sk-or-v1-… (enter your key)"></div>
+              <div class="form-row"><label class="form-label">API Key</label>
+                <div style="display:flex;gap:7px;flex-wrap:wrap">
+                  <div style="flex:1;min-width:160px;position:relative">
+                    <input class="fi" type="text" id="orKey" placeholder="sk-or-v1-… (enter your key)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%;padding-right:36px;font-family:var(--mono);font-size:var(--fs-xs)">
+                    <button onclick="toggleFieldVis('orKey',this)" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t4);cursor:pointer;font-size:13px" title="Show/hide">👁</button>
+                  </div>
+                  <button class="paste-btn" onclick="pasteToField('orKey')" title="Paste from clipboard">📋 Paste</button>
+                </div>
+              </div>
               <div class="form-row"><label class="form-label">Model</label>
                 <select class="fi" id="orModel">
                   <option value="nvidia/nemotron-3-nano-30b-a3b:free">Nemotron Nano (Free)</option>
@@ -1412,6 +1452,35 @@ body.light .frog-card{background:linear-gradient(135deg,#fffbf0,#fff8e0);border-
   </div>
 </div>
 
+<!-- CODE VIEW MODAL -->
+<div class="modal-overlay" id="codeViewModal">
+  <div class="modal modal-xl" style="max-height:95vh;display:flex;flex-direction:column">
+    <div class="modal-head" style="flex-shrink:0">
+      <span class="modal-title">⟨/⟩ Source Code</span>
+      <div style="display:flex;gap:7px;align-items:center">
+        <button class="btn btn-primary btn-sm" onclick="codeViewCopy()" id="codeViewCopyBtn">📋 Copy All</button>
+        <button class="btn btn-ghost btn-sm" onclick="codeViewDownload()">⬇ Download</button>
+        <button class="modal-close" onclick="closeModal('codeViewModal')">×</button>
+      </div>
+    </div>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)" id="codeViewSize"></span>
+      <span style="font-size:var(--fs-xs);color:var(--t4)">·</span>
+      <span style="font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">Clario 5.1 — single HTML file</span>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <input class="fi" id="codeViewSearch" placeholder="Search in code…" oninput="codeViewFilter()" style="width:180px;padding:4px 9px;font-size:var(--fs-xs)">
+        <span style="font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)" id="codeViewMatchCount"></span>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;background:var(--surf2)">
+      <pre id="codeViewContent" style="margin:0;padding:16px;font-size:11px;line-height:1.6;color:var(--t2);font-family:var(--mono);white-space:pre-wrap;word-break:break-all;tab-size:2"></pre>
+    </div>
+    <div style="padding:8px 16px;border-top:1px solid var(--bdr);font-size:var(--fs-xs);color:var(--t4);flex-shrink:0;font-family:var(--mono)">
+      💡 Save this file as <strong style="color:var(--acc3)">Clario.html</strong> and open in any browser. No install needed.
+    </div>
+  </div>
+</div>
+
 
 <script>
 
@@ -1503,7 +1572,12 @@ function gistToggleGuide(){
 async function gistConnect(){
   const tokenInput=g('gistToken');
   const token=(tokenInput?.value||'').trim();
-  if(!token){toast('Please enter your GitHub token.','warning');return;}
+  // If user didn't type anything new and a token is already saved, just re-verify
+  if(!token||token.includes('•')){
+    if(_gistToken){toast('Already connected. Pull or Push to sync.','info');}
+    else{toast('Please paste your GitHub Personal Access Token.','warning');}
+    return;
+  }
   if(!token.startsWith('ghp_')&&!token.startsWith('github_pat_')&&token.length<20){
     toast('Token looks invalid. Should start with ghp_ or github_pat_','warning');return;
   }
@@ -1724,7 +1798,15 @@ function audit(action,detail=''){auditLog.push({id:uid(),ts:now(),action,detail}
 function updateBadges(){const td=today();const ov=tasks.filter(t=>!t.done&&!t.archived&&!t.deleted&&!t.someday&&t.due&&t.due<td).length;const pc=calls.filter(c=>c.status==='pending'&&!c.deleted).length;setBadge('taskBadge',ov,ov>0);setBadge('callsBadge',pc,pc>0);setBadge('trashBadge',trash.length,trash.length>0);const b=g('overdueBanner');if(ov>0){b.style.display='';b.textContent=`⚠ ${ov} overdue task${ov>1?'s':''} — click to view`;}else b.style.display='none';}
 function setBadge(id,n,show){const el=g(id);if(!el)return;el.textContent=n;el.classList.toggle('hidden',!show||n===0);}
 function loadAISettings(){_orKey=localStorage.getItem(AI_KEY_STORE)||'';_orModel=localStorage.getItem(AI_MDL_STORE)||_orModel;}
-function saveAISettings(){_orKey=g('orKey').value.trim();_orModel=g('orModel').value;localStorage.setItem(AI_KEY_STORE,_orKey);localStorage.setItem(AI_MDL_STORE,_orModel);toast('AI settings saved.','success');}
+function saveAISettings(){
+  const newKey=g('orKey').value.trim();
+  if(newKey&&!newKey.includes('•'))_orKey=newKey; // only update if user typed a real key
+  _orModel=g('orModel').value;
+  localStorage.setItem(AI_KEY_STORE,_orKey);
+  localStorage.setItem(AI_MDL_STORE,_orModel);
+  toast('AI settings saved.','success');
+  renderAdmin(); // refresh to show masked placeholder
+}
 
 /* ═══ EVENT DELEGATION — central click handler ═══ */
 document.addEventListener('click',e=>{
@@ -2051,7 +2133,28 @@ function restoreTrash(id,type){const item=trash.find(x=>x.id===id);if(!item)retu
 function emptyTrash(){showConfirm('Permanently delete all trash? Cannot undo.',()=>{trash=[];persist();renderTrash();toast('Trash emptied.','info');},'Empty Trash','Delete All');}
 
 /* ═══ ADMIN ═══ */
-function renderAdmin(){const k=g('orKey'),m=g('orModel');if(k)k.value=_orKey;if(m)m.value=_orModel;const fn=g('syncFolderName');if(fn)fn.textContent=localStorage.getItem(FS_DIR_KEY)||'Not linked';const lt=g('syncLastTime');if(lt)lt.textContent=localStorage.getItem('c51_lastSync')||'—';const auto=g('autoTheme');if(auto)auto.checked=localStorage.getItem(AUTO_THEME_KEY)!=='false';initSyncUI();const inp=g('gistToken');if(inp&&_gistToken)inp.value=_gistToken;renderAuditLog();}
+function renderAdmin(){
+  const k=g('orKey'),m=g('orModel');
+  // Keep type=text for mobile paste support. Show masked placeholder if key exists.
+  if(k){
+    k.type='text';
+    k.value='';
+    k.placeholder=_orKey?'sk-or-••••••••••••• (saved — paste new key to update)':'sk-or-v1-… (enter your key)';
+  }
+  if(m)m.value=_orModel;
+  const fn=g('syncFolderName');if(fn)fn.textContent=localStorage.getItem(FS_DIR_KEY)||'Not linked';
+  const lt=g('syncLastTime');if(lt)lt.textContent=localStorage.getItem('c51_lastSync')||'—';
+  const auto=g('autoTheme');if(auto)auto.checked=localStorage.getItem(AUTO_THEME_KEY)!=='false';
+  initSyncUI();
+  // Gist token — keep type=text for mobile paste, show masked placeholder if saved
+  const inp=g('gistToken');
+  if(inp){
+    inp.type='text';
+    inp.value='';
+    inp.placeholder=_gistToken?'ghp_••••••••••••• (saved — paste new token to update)':'ghp_xxxxxxxxxxxxxxxxxxxx';
+  }
+  renderAuditLog();
+}
 function renderAuditLog(){const el=g('auditLog');if(!el)return;const items=[...auditLog].reverse().slice(0,60);el.innerHTML=items.length?items.map(a=>`<div class="audit-row"><span class="audit-time">${new Date(a.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><span class="audit-action"><strong>${esc(a.action)}</strong>${a.detail?' — '+esc(a.detail):''}</span></div>`).join(''):'<div class="empty-state" style="padding:20px"><div class="empty-sub">No audit entries yet.</div></div>';}
 function changePin(){const cur=g('curPin').value,nw=g('newPin').value,conf=g('confPin').value;const stored=localStorage.getItem(PIN_KEY);if(stored&&hashPin(cur)!==stored){toast('Current PIN incorrect.','error');return;}if(nw.length!==4||!/^\d{4}$/.test(nw)){toast('PIN must be 4 digits.','warning');return;}if(nw!==conf){toast("PINs don't match.",'warning');return;}localStorage.setItem(PIN_KEY,hashPin(nw));['curPin','newPin','confPin'].forEach(id=>g(id).value='');toast('PIN updated.','success');}
 
@@ -2128,6 +2231,115 @@ document.addEventListener('keydown',e=>{
 if('serviceWorker' in navigator){
   const sw=`self.addEventListener('install',e=>{self.skipWaiting();});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503})));});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+
+/* ═══ FIELD VISIBILITY & PASTE (mobile-safe) ═══ */
+
+// toggleFieldVis — works for fields that START as password (PIN fields)
+function toggleFieldVis(inputId, btn){
+  const el=g(inputId);
+  if(!el)return;
+  const hide=el.type==='text';
+  el.type=hide?'password':'text';
+  if(btn)btn.textContent=hide?'👁':'🙈';
+  el.focus();
+  try{el.setSelectionRange(el.value.length,el.value.length);}catch(_){}
+}
+
+// gistTokenToggleVis — field STARTS as text, toggle to masked
+function gistTokenToggleVis(btn){
+  const el=g('gistToken');
+  if(!el)return;
+  const nowText=el.type==='text';
+  el.type=nowText?'password':'text';
+  if(btn)btn.textContent=nowText?'🙈':'👁';
+  el.focus();
+  try{el.setSelectionRange(el.value.length,el.value.length);}catch(_){}
+}
+
+// pasteToField — uses Clipboard API with execCommand fallback for iOS
+async function pasteToField(inputId){
+  const el=g(inputId);
+  if(!el)return;
+  el.focus();
+  // Modern clipboard API (Chrome on Android, Safari 13.4+)
+  if(navigator.clipboard&&navigator.clipboard.readText){
+    try{
+      const text=await navigator.clipboard.readText();
+      el.value=text.trim();
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+      toast('Pasted ✓','success');
+      return;
+    }catch(e){
+      // Permission denied or not available — fall through to prompt
+    }
+  }
+  // iOS Safari fallback — execCommand paste
+  try{
+    document.execCommand('paste');
+    toast('Pasted ✓','success');
+  }catch(e){
+    // Final fallback — prompt user
+    const val=prompt('Clipboard access not available.\nPaste your token here:');
+    if(val){
+      el.value=val.trim();
+      el.dispatchEvent(new Event('input',{bubbles:true}));
+      toast('Pasted ✓','success');
+    }
+  }
+}
+
+/* ═══ CODE VIEW ═══ */
+let _codeViewSource='';
+function openCodeView(){
+  // Get the full current page source
+  _codeViewSource=document.documentElement.outerHTML;
+  const pre=g('codeViewContent');
+  const sizeEl=g('codeViewSize');
+  if(!pre)return;
+  const lines=_codeViewSource.split('\n').length;
+  const kb=Math.round(_codeViewSource.length/1024);
+  if(sizeEl)sizeEl.textContent=`${kb} KB · ${lines.toLocaleString()} lines`;
+  pre.textContent=_codeViewSource;
+  g('codeViewSearch').value='';
+  g('codeViewMatchCount').textContent='';
+  openModal('codeViewModal');
+}
+function codeViewFilter(){
+  const q=g('codeViewSearch').value.trim();
+  const pre=g('codeViewContent');
+  const countEl=g('codeViewMatchCount');
+  if(!q){pre.textContent=_codeViewSource;if(countEl)countEl.textContent='';return;}
+  // Highlight matches
+  const escaped=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const regex=new RegExp(escaped,'gi');
+  const matches=[..._codeViewSource.matchAll(regex)];
+  if(countEl)countEl.textContent=matches.length?`${matches.length} match${matches.length!==1?'es':''}`: 'No matches';
+  pre.innerHTML=esc(_codeViewSource).replace(
+    new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),
+    m=>`<mark style="background:var(--amb-l);color:var(--amb);border-radius:2px">${m}</mark>`
+  );
+}
+async function codeViewCopy(){
+  const btn=g('codeViewCopyBtn');
+  try{
+    await navigator.clipboard.writeText(_codeViewSource);
+    if(btn){btn.textContent='✓ Copied!';btn.style.background='var(--grn)';setTimeout(()=>{btn.textContent='📋 Copy All';btn.style.background='';},2000);}
+  }catch(e){
+    // Fallback for mobile browsers that restrict clipboard API
+    const ta=document.createElement('textarea');
+    ta.value=_codeViewSource;
+    ta.style.cssText='position:fixed;top:0;left:0;opacity:0;font-size:16px';
+    document.body.appendChild(ta);
+    ta.focus();ta.select();
+    try{document.execCommand('copy');if(btn){btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy All',2000);}}
+    catch(e2){toast('Copy failed — use Download instead.','warning');}
+    document.body.removeChild(ta);
+  }
+}
+function codeViewDownload(){
+  dlText(_codeViewSource,'Clario_5.1.html');
+  toast('Downloaded Clario_5.1.html','success');
 }
 
 /* ═══ INIT ═══ */
