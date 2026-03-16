@@ -311,8 +311,11 @@ textarea.fi{resize:vertical;min-height:78px}
 
 /* BENTO DASHBOARD */
 .bento{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
-.bento-card{background:var(--card-bg);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;transition:border-color var(--tr)}
+.bento-card{background:var(--card-bg);border:1px solid var(--bdr);border-radius:var(--r);overflow:visible;transition:border-color var(--tr)}
 .bento-card:hover{border-color:var(--bdr2)}
+/* b-matrix needs visible overflow for drag ghost, inner content clips itself */
+.b-matrix{overflow:visible}
+.mini-matrix{overflow:visible}
 .b-focus{grid-column:span 4}
 .b-frog{grid-column:span 4}
 .b-sidebar{grid-column:span 4}
@@ -326,6 +329,9 @@ textarea.fi{resize:vertical;min-height:78px}
 /* Mini matrix task rows with checkmark */
 .mini-task{display:flex;align-items:center;gap:4px;padding:3px 4px;border-radius:3px;cursor:pointer;font-size:11px;color:var(--t2);transition:background var(--tr)}
 .mini-task:hover{background:var(--surf2)}
+.mini-task[draggable="true"]{cursor:grab}
+.mini-task[draggable="true"]:active{cursor:grabbing;opacity:.7}
+.matrix-drag-over{background:var(--acc-ll)!important;border-color:var(--acc)!important;outline:2px dashed var(--acc);outline-offset:-2px}
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .stat-card{background:var(--card-bg);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 15px;position:relative;overflow:hidden;transition:border-color var(--tr)}
 .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--t5)}
@@ -676,9 +682,10 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
       <button class="tb-btn" onclick="toggleAIPanel()" id="aiBtn" title="AI Assistant [Ctrl+A]">🤖 <span class="tb-label">AI</span></button>
       <button class="tb-btn" id="installBtn" onclick="installPWA()" title="Install Clario as desktop app" style="display:none;color:var(--acc3);border-color:var(--acc-l)">⊞ <span class="tb-label">Install App</span></button>
       <button class="tb-icon" onclick="saveAppFile()" title="Download Clario as HTML file" style="font-size:16px">⬇</button>
-      <div id="syncPill" onclick="nav('admin',document.getElementById('ni-admin'))">
+      <div id="syncPill" onclick="nav('admin',document.getElementById('ni-admin'))" title="Sync settings">
         <span class="sync-dot" id="syncDot2"></span><span id="syncPillLbl">Not linked</span>
       </div>
+      <button class="tb-icon" id="qrBtn" onclick="openQRSync()" title="QR Code Sync — connect another device" style="font-size:15px;display:none">📱</button>
       <button class="tb-icon" onclick="openShortcuts()" title="Keyboard shortcuts [?]">⌨</button>
       <div style="position:relative">
         <button class="btn-new" id="newBtn" onclick="toggleQP(event)">
@@ -980,16 +987,18 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
               </div>
               <!-- Connected state -->
               <div id="gistConnectedPanel" style="display:none">
-                <div class="sync-status-row"><span class="sync-status-lbl">Gist ID</span><span class="sync-status-val" id="gistIdDisplay">—</span></div>
+                <div class="sync-status-row"><span class="sync-status-lbl">Gist ID</span><span class="sync-status-val mono" id="gistIdDisplay" style="font-size:var(--fs-xs)">—</span></div>
                 <div class="sync-status-row"><span class="sync-status-lbl">Last sync</span><span class="sync-status-val" id="gistLastSync">—</span></div>
                 <div class="sync-status-row"><span class="sync-status-lbl">Status</span><span class="sync-status-val" id="gistStatusText">Connected</span></div>
                 <div style="display:flex;gap:7px;margin-top:13px;flex-wrap:wrap">
-                  <button class="btn btn-primary btn-sm" onclick="gistPush()">⬆ Push to Gist</button>
-                  <button class="btn btn-ghost btn-sm" onclick="gistPull()">⬇ Pull from Gist</button>
+                  <button class="btn btn-primary btn-sm" onclick="gistPush()">⬆ Push</button>
+                  <button class="btn btn-ghost btn-sm" onclick="gistPull()">⬇ Pull</button>
+                  <button class="btn btn-ghost btn-sm" onclick="openQRSync()" style="color:var(--acc3)">📱 QR Code</button>
                   <button class="btn btn-danger btn-sm" onclick="gistDisconnect()">Disconnect</button>
                 </div>
-                <div style="margin-top:10px;font-size:var(--fs-xs);color:var(--t4);line-height:1.6;font-family:var(--mono)">
-                  Auto-sync: saves push automatically on every change. Pull to get data from another device.
+                <div style="margin-top:9px;font-size:var(--fs-xs);color:var(--t4);line-height:1.6;font-family:var(--mono)">
+                  Auto-pushes 4s after every change. Pull to fetch changes from another device.<br>
+                  <strong style="color:var(--acc3)">New device?</strong> Use QR Code to connect instantly.
                 </div>
               </div>
               <!-- Help toggle -->
@@ -1360,6 +1369,17 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   </div>
 </div>
 
+<!-- Project Detail Page Modal -->
+<div class="modal-overlay" id="projectPageModal">
+  <div class="modal" style="max-width:720px;max-height:92vh;display:flex;flex-direction:column">
+    <div class="modal-head" style="flex-shrink:0">
+      <span class="modal-title" id="projectPageTitle">📁 Project</span>
+      <button class="modal-close" onclick="closeModal('projectPageModal')">×</button>
+    </div>
+    <div id="projectPageContent" style="flex:1;overflow-y:auto;padding:18px 20px"></div>
+  </div>
+</div>
+
 <!-- Note Modal (quick create) -->
 <div class="modal-overlay" id="noteModal">
   <div class="modal">
@@ -1557,6 +1577,19 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
 
 <!-- CODE VIEW MODAL -->
 
+<!-- QR Sync Modal -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head">
+      <span class="modal-title">📱 QR Code Sync</span>
+      <button class="modal-close" onclick="closeModal('qrModal')">×</button>
+    </div>
+    <div class="modal-body" id="qrContent" style="padding:18px 20px">
+      <div style="text-align:center;color:var(--t4)">Loading…</div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 
@@ -1610,35 +1643,28 @@ const GIST_FILENAME='clario51_db.json';
 let _gistToken='';
 let _gistId='';
 let _gistAutoSaveTimer=null;
+let _gistSyncing=false; // prevents push-during-pull race condition
 
 function gistInit(){
   _gistToken=localStorage.getItem(GIST_TOKEN_KEY)||'';
   _gistId=localStorage.getItem(GIST_ID_KEY)||'';
-  const tokenInput=g('gistToken');
-  if(tokenInput&&_gistToken)tokenInput.value=_gistToken;
 }
 
 function gistUpdateUI(){
   const connected=!!_gistToken;
-  const connectPanel=g('gistConnectPanel');
-  const connectedPanel=g('gistConnectedPanel');
-  const badge=g('gistStatusBadge');
-  const idDisplay=g('gistIdDisplay');
-  if(connectPanel)connectPanel.style.display=connected?'none':'';
-  if(connectedPanel)connectedPanel.style.display=connected?'':'none';
-  if(badge){
-    badge.textContent=connected?'Connected':'Not connected';
-    badge.style.background=connected?'var(--grn-l)':'var(--surf3)';
-    badge.style.color=connected?'var(--grn)':'var(--t4)';
-  }
-  if(idDisplay)idDisplay.textContent=_gistId?_gistId.slice(0,16)+'…':'Creating on first push…';
-  // Also update topbar sync pill
-  updateSyncUI(connected?'ok':'idle', connected?'Gist':'Not linked');
+  const cp=g('gistConnectPanel'),cc=g('gistConnectedPanel'),badge=g('gistStatusBadge'),idDisp=g('gistIdDisplay');
+  if(cp)cp.style.display=connected?'none':'';
+  if(cc)cc.style.display=connected?'':'none';
+  if(badge){badge.textContent=connected?'Connected':'Not connected';badge.style.background=connected?'var(--grn-l)':'var(--surf3)';badge.style.color=connected?'var(--grn)':'var(--t4)';}
+  if(idDisp)idDisp.textContent=_gistId?_gistId.slice(0,16)+'…':'Will find/create on first push';
+  updateSyncUI(connected?'ok':'idle',connected?'Gist':'Not linked');
+  // Show/hide QR button in topbar
+  const qrBtn=g('qrBtn');
+  if(qrBtn)qrBtn.style.display=connected?'':'none';
 }
 
 function gistToggleGuide(){
-  const guide=g('gistSetupGuide');
-  const helpTxt=g('gistHelpTxt');
+  const guide=g('gistSetupGuide'),helpTxt=g('gistHelpTxt');
   if(!guide)return;
   const showing=guide.style.display!=='none';
   guide.style.display=showing?'none':'';
@@ -1647,90 +1673,117 @@ function gistToggleGuide(){
 
 async function gistConnect(){
   const tokenInput=g('gistToken');
-  const token=(tokenInput?.value||'').trim();
-  // If user didn't type anything new and a token is already saved, just re-verify
-  if(!token||token.includes('•')){
-    if(_gistToken){toast('Already connected. Pull or Push to sync.','info');}
-    else{toast('Please paste your GitHub Personal Access Token.','warning');}
-    return;
-  }
+  const raw=(tokenInput?.value||'').trim();
+  // If field shows masked placeholder (••••), use already-saved token
+  const token=raw.includes('•')||raw===''?_gistToken:raw;
+  if(!token){toast('Please paste your GitHub Personal Access Token.','warning');return;}
   if(!token.startsWith('ghp_')&&!token.startsWith('github_pat_')&&token.length<20){
     toast('Token looks invalid. Should start with ghp_ or github_pat_','warning');return;
   }
-  // Verify token by hitting GitHub API
   const statusEl=g('gistStatusText');
   if(statusEl)statusEl.textContent='Verifying…';
   try{
     const res=await fetch('https://api.github.com/user',{
       headers:{'Authorization':'token '+token,'Accept':'application/vnd.github.v3+json'}
     });
-    if(!res.ok){
-      const err=await res.json().catch(()=>({}));
-      toast('Token invalid: '+(err.message||'Check your token and try again.'),'error');
-      if(statusEl)statusEl.textContent='Invalid token';
-      return;
-    }
+    if(!res.ok){const err=await res.json().catch(()=>({}));toast('Token invalid: '+(err.message||'Check token'),'error');if(statusEl)statusEl.textContent='Invalid token';return;}
     const user=await res.json();
     _gistToken=token;
     localStorage.setItem(GIST_TOKEN_KEY,token);
-    toast(`Connected as ${user.login} ✓`,'success');
+    toast(`Connected as ${user.login} — searching for existing Clario data…`,'info');
     gistUpdateUI();
-    // Auto-push on first connect
-    await gistPush();
-  }catch(e){
-    toast('Connection failed: '+e.message,'error');
-    if(statusEl)statusEl.textContent='Error';
+    // Try to find existing Clario gist before creating a new one
+    await gistFindOrCreate();
+  }catch(e){toast('Connection failed: '+e.message,'error');if(statusEl)statusEl.textContent='Error';}
+}
+
+// Find existing Clario gist (so device 2 uses the same gist as device 1)
+async function gistFindOrCreate(){
+  if(!_gistToken)return;
+  // If we already have an ID stored, verify it still exists
+  if(_gistId){
+    try{
+      const check=await fetch(`https://api.github.com/gists/${_gistId}`,{headers:{'Authorization':'token '+_gistToken}});
+      if(check.ok){
+        toast('Found existing Clario gist ✓','success');
+        await gistPull();
+        return;
+      }
+    }catch(e){}
+    // Stored ID invalid, clear it and search
+    _gistId='';localStorage.removeItem(GIST_ID_KEY);
   }
+  // Search all gists for one containing clario51_db.json
+  try{
+    toast('Searching your gists for Clario data…','info');
+    let page=1;
+    while(page<=3){ // check up to 3 pages (100 gists)
+      const res=await fetch(`https://api.github.com/gists?per_page=100&page=${page}`,{
+        headers:{'Authorization':'token '+_gistToken,'Accept':'application/vnd.github.v3+json'}
+      });
+      if(!res.ok)break;
+      const gists=await res.json();
+      if(!gists.length)break;
+      const found=gists.find(g=>g.files&&g.files[GIST_FILENAME]);
+      if(found){
+        _gistId=found.id;
+        localStorage.setItem(GIST_ID_KEY,_gistId);
+        toast('Found existing Clario gist! Pulling data…','success');
+        gistUpdateUI();
+        await gistPull();
+        return;
+      }
+      if(gists.length<100)break;
+      page++;
+    }
+  }catch(e){}
+  // No existing gist found — create new one with first push
+  toast('No existing Clario gist found — creating new one…','info');
+  await gistPush();
 }
 
 async function gistPush(){
   if(!_gistToken){toast('Not connected to GitHub.','warning');return;}
+  if(_gistSyncing){toast('Sync in progress, please wait…','info');return;}
+  _gistSyncing=true;
   const statusEl=g('gistStatusText');
-  const lastSyncEl=g('gistLastSync');
   if(statusEl)statusEl.textContent='Pushing…';
   updateSyncUI('syncing');
   try{
     const content=JSON.stringify(getState(),null,2);
     let res;
     if(_gistId){
-      // Update existing gist
       res=await fetch(`https://api.github.com/gists/${_gistId}`,{
         method:'PATCH',
         headers:{'Authorization':'token '+_gistToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
         body:JSON.stringify({files:{[GIST_FILENAME]:{content}}})
       });
     } else {
-      // Create new private gist
       res=await fetch('https://api.github.com/gists',{
         method:'POST',
         headers:{'Authorization':'token '+_gistToken,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-        body:JSON.stringify({description:'Clario 5.1 sync data',public:false,files:{[GIST_FILENAME]:{content}}})
+        body:JSON.stringify({description:'Clario 5.1 — personal productivity sync',public:false,files:{[GIST_FILENAME]:{content}}})
       });
     }
-    if(!res.ok){
-      const err=await res.json().catch(()=>({}));
-      throw new Error(err.message||'Push failed ('+res.status+')');
-    }
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.message||'Push failed ('+res.status+')');}
     const data=await res.json();
-    if(!_gistId){
-      _gistId=data.id;
-      localStorage.setItem(GIST_ID_KEY,_gistId);
-      gistUpdateUI();
-    }
+    if(!_gistId){_gistId=data.id;localStorage.setItem(GIST_ID_KEY,_gistId);gistUpdateUI();}
     const ts=new Date().toLocaleTimeString();
     if(statusEl)statusEl.textContent='Synced';
-    if(lastSyncEl)lastSyncEl.textContent=ts;
+    if(g('gistLastSync'))g('gistLastSync').textContent=ts;
     localStorage.setItem('c51_gistLastSync',ts);
     updateSyncUI('ok','Gist synced');
   }catch(e){
     if(statusEl)statusEl.textContent='Push failed';
     updateSyncUI('error');
     toast('Gist push failed: '+e.message,'error');
-  }
+  }finally{_gistSyncing=false;}
 }
 
 async function gistPull(){
-  if(!_gistToken||!_gistId){toast('Not connected or no Gist ID yet. Push first.','warning');return;}
+  if(!_gistToken||!_gistId){toast('Not connected or no Gist ID. Connect first.','warning');return;}
+  if(_gistSyncing){toast('Sync in progress, please wait…','info');return;}
+  _gistSyncing=true;
   const statusEl=g('gistStatusText');
   if(statusEl)statusEl.textContent='Pulling…';
   updateSyncUI('syncing');
@@ -1738,53 +1791,146 @@ async function gistPull(){
     const res=await fetch(`https://api.github.com/gists/${_gistId}`,{
       headers:{'Authorization':'token '+_gistToken,'Accept':'application/vnd.github.v3+json'}
     });
-    if(!res.ok){
-      const err=await res.json().catch(()=>({}));
-      throw new Error(err.message||'Pull failed ('+res.status+')');
-    }
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.message||'Pull failed ('+res.status+')');}
     const data=await res.json();
     const file=data.files?.[GIST_FILENAME];
-    if(!file)throw new Error(`File "${GIST_FILENAME}" not found in Gist.`);
-    // Fetch raw content (may be truncated in API response)
+    if(!file)throw new Error(`"${GIST_FILENAME}" not found in Gist. Push from the other device first.`);
     let content=file.content;
-    if(file.truncated){
-      const rawRes=await fetch(file.raw_url);
-      content=await rawRes.text();
-    }
+    if(file.truncated){const rawRes=await fetch(file.raw_url);content=await rawRes.text();}
     const remote=JSON.parse(content);
     mergeRemote(remote);
-    persist();
+    // Save to localStorage WITHOUT triggering another push
+    try{localStorage.setItem(LS_KEY,JSON.stringify(getState()));}catch(e){}
+    updateBadges();
     renderView(currentView);
     const ts=new Date().toLocaleTimeString();
     if(statusEl)statusEl.textContent='Synced';
     if(g('gistLastSync'))g('gistLastSync').textContent=ts;
     localStorage.setItem('c51_gistLastSync',ts);
     updateSyncUI('ok','Gist synced');
-    toast('Pulled from Gist ✓','success');
+    toast('Pulled from Gist ✓ — '+ts,'success');
   }catch(e){
     if(statusEl)statusEl.textContent='Pull failed';
     updateSyncUI('error');
     toast('Gist pull failed: '+e.message,'error');
-  }
+  }finally{_gistSyncing=false;}
 }
 
 function gistDisconnect(){
   showConfirm('Disconnect GitHub Gist? Your local data stays intact.',()=>{
     _gistToken='';_gistId='';
-    localStorage.removeItem(GIST_TOKEN_KEY);
-    localStorage.removeItem(GIST_ID_KEY);
+    localStorage.removeItem(GIST_TOKEN_KEY);localStorage.removeItem(GIST_ID_KEY);
     const inp=g('gistToken');if(inp)inp.value='';
-    gistUpdateUI();
-    updateSyncUI('idle','Not linked');
+    gistUpdateUI();updateSyncUI('idle','Not linked');
     toast('Disconnected from GitHub Gist.','info');
   },'Disconnect Gist','Disconnect');
 }
 
-// Auto-push after every persist — debounced 3s
+// Auto-push debounced — only when not currently syncing
 function scheduleGistPush(){
-  if(!_gistToken)return;
+  if(!_gistToken||_gistSyncing)return;
   clearTimeout(_gistAutoSaveTimer);
-  _gistAutoSaveTimer=setTimeout(()=>gistPush(),3000);
+  _gistAutoSaveTimer=setTimeout(()=>{if(!_gistSyncing)gistPush();},4000);
+}
+
+/* ═══ QR CODE SYNC ═══ */
+function openQRSync(){
+  renderQRPanel();
+  openModal('qrModal');
+}
+
+function renderQRPanel(){
+  const el=g('qrContent');if(!el)return;
+  if(!_gistToken){
+    el.innerHTML=`<div style="text-align:center;padding:20px">
+      <div style="font-size:var(--fs-sm);color:var(--t3);margin-bottom:12px">Connect GitHub Gist first, then use QR to share credentials to another device.</div>
+      <button class="btn btn-primary" onclick="closeModal('qrModal');nav('admin',g('ni-admin'))">Go to Settings → Sync</button>
+    </div>`;
+    return;
+  }
+  // Encode token + gistId as a URL with hash params (never sent to any server)
+  const payload=btoa(JSON.stringify({t:_gistToken,g:_gistId}));
+  const qrUrl=window.location.href.split('?')[0]+'?clario_sync='+payload;
+  el.innerHTML=`
+    <div style="text-align:center">
+      <div style="font-size:var(--fs-sm);color:var(--t2);margin-bottom:12px;line-height:1.6">
+        Scan this QR code on your other device to instantly connect to the same Gist.<br>
+        <span style="font-size:var(--fs-xs);color:var(--t4)">The QR code contains your GitHub token — keep it private.</span>
+      </div>
+      <div id="qrCanvas" style="display:inline-block;background:#fff;padding:12px;border-radius:8px;margin-bottom:14px"></div>
+      <div style="font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono);margin-bottom:12px">Gist ID: ${_gistId?_gistId.slice(0,16)+'…':'none yet'}</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="copyQRLink()">📋 Copy Link</button>
+        <button class="btn btn-ghost btn-sm" onclick="renderQRPanel()">↻ Refresh</button>
+      </div>
+      <div style="margin-top:14px;padding:10px 14px;background:var(--surf2);border-radius:var(--rs);font-size:var(--fs-xs);color:var(--t4);text-align:left;line-height:1.6">
+        <strong style="color:var(--t2)">How to use:</strong><br>
+        1. Open Clario on the other device (mobile/desktop)<br>
+        2. Scan this QR code with your camera<br>
+        3. It opens Clario and auto-connects to the same Gist<br>
+        4. Your data syncs automatically
+      </div>
+    </div>`;
+  // Generate QR using qrcodejs
+  generateQR('qrCanvas', qrUrl);
+  // Store for copy
+  g('qrContent').dataset.url=qrUrl;
+}
+
+function generateQR(containerId, text){
+  const container=g(containerId);
+  if(!container)return;
+  container.innerHTML='';
+  // Use QRCode.js if available, otherwise show text link
+  if(typeof QRCode!=='undefined'){
+    new QRCode(container,{text,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+  } else {
+    // Load QRCode.js dynamically
+    const script=document.createElement('script');
+    script.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+    script.onload=()=>{
+      container.innerHTML='';
+      new QRCode(container,{text,width:200,height:200,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+    };
+    script.onerror=()=>{
+      // Fallback: use a QR API service
+      const img=document.createElement('img');
+      img.src=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
+      img.alt='QR Code';
+      img.style.cssText='width:200px;height:200px;border-radius:4px';
+      container.appendChild(img);
+    };
+    document.head.appendChild(script);
+  }
+}
+
+async function copyQRLink(){
+  const url=g('qrContent')?.dataset?.url||'';
+  if(!url)return;
+  try{await navigator.clipboard.writeText(url);toast('Link copied — paste in browser on other device','success');}
+  catch(e){toast('Copy failed — manually copy the URL from below','warning');}
+}
+
+// Check on load if URL contains sync params (device scanned QR)
+function checkQRSyncParam(){
+  try{
+    const params=new URLSearchParams(window.location.search);
+    const syncData=params.get('clario_sync');
+    if(!syncData)return;
+    // Clean URL without reloading
+    const cleanUrl=window.location.href.split('?')[0];
+    window.history.replaceState({},'',cleanUrl);
+    const decoded=JSON.parse(atob(syncData));
+    if(decoded.t){
+      _gistToken=decoded.t;
+      if(decoded.g)_gistId=decoded.g;
+      localStorage.setItem(GIST_TOKEN_KEY,decoded.t);
+      if(decoded.g)localStorage.setItem(GIST_ID_KEY,decoded.g);
+      gistUpdateUI();
+      toast('QR sync detected — pulling data from Gist…','success');
+      gistPull();
+    }
+  }catch(e){}
 }
 
 /* ═══ FILE SYSTEM (Atomic db.tmp → db.json, desktop only) ═══ */
@@ -1861,7 +2007,7 @@ function unlockApp(){for(let i=0;i<4;i++)g('pd'+i).className='pin-dot ok';setTim
 document.addEventListener('keydown',e=>{if(g('lockScreen').style.display==='none')return;if(e.key>='0'&&e.key<='9')pinKey(e.key);if(e.key==='Backspace')pinDel();});
 
 /* ═══ BOOT ═══ */
-function bootApp(){loadFromLS();restoreFolderLabel();initTheme();loadAISettings();initSyncUI();rolloverOverdueTasks();setupRecurring();setupNoteAutoSave();scheduleShutdownPrompt();const sc=localStorage.getItem('c51_sbcol');if(sc==='1'){_sbCol=true;g('sidebar').classList.add('collapsed');}nav('dashboard',g('ni-dashboard'));updateBadges();}
+function bootApp(){loadFromLS();restoreFolderLabel();initTheme();loadAISettings();initSyncUI();checkQRSyncParam();rolloverOverdueTasks();setupRecurring();setupNoteAutoSave();scheduleShutdownPrompt();const sc=localStorage.getItem('c51_sbcol');if(sc==='1'){_sbCol=true;g('sidebar').classList.add('collapsed');}nav('dashboard',g('ni-dashboard'));updateBadges();}
 function restoreFolderLabel(){const name=localStorage.getItem(FS_DIR_KEY);if(name)updateSyncUI('idle',name+' (re-link in Settings)');}
 function rolloverOverdueTasks(){const td=today();if(localStorage.getItem('c51_rollover')===td)return;localStorage.setItem('c51_rollover',td);let n=0;tasks.filter(t=>!t.done&&!t.deleted&&!t.someday&&t.due&&t.due<td&&t.due>=addDays(td,-2)).forEach(t=>{t.due=td;t.updated_at=now();t.rolled=true;n++;});if(n>0){persist();toast(n+' task'+(n>1?'s':'')+' rolled to today.','info');}}
 
@@ -2030,16 +2176,21 @@ function renderDashboard(){
       <div class="card-head" style="border-top:1px solid var(--bdr)"><span class="card-title">🗓 Upcoming Events</span><button class="btn btn-ghost btn-xs" data-action="navSchedule">All</button></div>
       <div class="card-body" style="padding:9px 13px;flex:1">${upEv.map(e=>`<div style="padding:4px 0;border-bottom:1px solid var(--bdr);cursor:pointer;font-size:var(--fs-sm)" data-action="openEvent" data-id="${e.id}"><div style="color:var(--t1);font-weight:600">${esc(e.title)}</div><div style="color:var(--t4);font-family:var(--mono);font-size:10px">${fmtDate(e.date)}${e.time?' '+e.time:''}</div></div>`).join('')||'<div style="color:var(--t4);font-size:var(--fs-xs)">No upcoming events.</div>'}</div>
     </div>`+
-    // Eisenhower Matrix (right, span 8) — draggable tasks, all quadrants filled
+    // Eisenhower Matrix — full drag-drop between quadrants
     `<div class="bento-card b-matrix">
       <div class="card-head"><span class="card-title">🧠 Eisenhower Matrix</span><button class="btn btn-ghost btn-xs" onclick="nav('tasks',g('ni-tasks'))">All Tasks</button></div>
-      <div class="mini-matrix">${mq.map((q,i)=>`<div class="mini-q ${mqcls[i]}">
+      <div class="mini-matrix">${mq.map((q,i)=>`<div class="mini-q ${mqcls[i]}"
+        ondragover="event.preventDefault();this.classList.add('matrix-drag-over')"
+        ondragleave="this.classList.remove('matrix-drag-over')"
+        ondrop="onDropMatrix(event,${i});this.classList.remove('matrix-drag-over')">
         <div class="mini-q-hdr">${mqhdr[i]} <span style="font-size:9px;color:var(--t4);font-family:var(--mono)">(${q.length})</span></div>
-        ${q.slice(0,5).map(t=>`<div class="mini-task" draggable="true" data-action="openTask" data-id="${t.id}" ondragstart="onTaskDragStart(event,'${t.id}')">
-          <div class="chk ${t.done?'checked':''}" data-action="toggleTask" data-id="${t.id}" style="width:11px;height:11px;flex-shrink:0"></div>
+        ${q.slice(0,5).map(t=>`<div class="mini-task" draggable="true"
+          ondragstart="onTaskDragStart(event,'${t.id}')"
+          onclick="openTaskModal('${t.id}')">
+          <div class="chk ${t.done?'checked':''}" onclick="event.stopPropagation();toggleTask('${t.id}')" style="width:11px;height:11px;flex-shrink:0"></div>
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:11px">${esc(t.title)}</span>
         </div>`).join('')}
-        ${q.length===0?'<div style="font-size:10px;color:var(--t4);padding:4px 2px;font-style:italic">Empty</div>':''}
+        ${q.length===0?'<div style="font-size:10px;color:var(--t4);padding:4px 2px;font-style:italic">Drop tasks here</div>':''}
         ${q.length>5?`<div style="font-size:9px;color:var(--t4);padding:2px;font-family:var(--mono)">+${q.length-5} more</div>`:''}
       </div>`).join('')}</div>
     </div>`+
@@ -2195,9 +2346,161 @@ function deleteCall(){if(!editingCallId)return;closeModal('callModal');showConfi
 /* ═══ PROJECTS ═══ */
 let projFilter='all',editingProjId=null;
 function setProjFilter(f,el){projFilter=f;gsa('#view-projects .ftab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');renderProjects();}
-function renderProjects(){let list=projects.filter(p=>!p.deleted);if(projFilter==='active')list=list.filter(p=>p.status==='active');else if(projFilter==='done')list=list.filter(p=>p.status==='done');const vm=g('projView')?.value||'grid';const el=g('projList');if(!list.length){el.innerHTML='<div class="empty-state"><div class="empty-ico">📁</div><div class="empty-title">No projects</div><div class="empty-sub">Click + New Project to get started.</div></div>';return;}const tc=p=>tasks.filter(t=>t.project_id===p.id&&!t.deleted).length;const dc=p=>tasks.filter(t=>t.project_id===p.id&&t.done&&!t.deleted).length;if(vm==='grid'){el.innerHTML=`<div class="proj-grid">${list.map(p=>{const tt=tc(p),dd=dc(p),pct=tt?Math.round(dd/tt*100):0;return`<div class="proj-card" data-action="openProj" data-id="${p.id}"><div class="proj-card-name">${esc(p.name)}</div><div class="proj-card-meta">${p.due?'Due '+fmtDate(p.due):'No due date'} · ${tt} tasks</div><div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div><div class="proj-card-foot"><span class="sbadge ${p.status}">${p.status}</span><span style="font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">${pct}%</span></div></div>`;}).join('')}</div>`;}else{el.innerHTML=`<div class="card">${list.map(p=>`<div class="tr" data-action="openProj" data-id="${p.id}"><div class="tr-body"><div class="tr-title">${esc(p.name)}</div><div class="tr-meta"><span class="sbadge ${p.status}">${p.status}</span><span class="tr-meta-item">${dc(p)}/${tc(p)} tasks</span>${p.due?`<span class="tr-meta-item">${fmtDate(p.due)}</span>`:''}</div></div></div>`).join('')}</div>`;}}
+function renderProjects(){
+  let list=projects.filter(p=>!p.deleted);
+  if(projFilter==='active')list=list.filter(p=>p.status==='active');
+  else if(projFilter==='done')list=list.filter(p=>p.status==='done');
+  const vm=g('projView')?.value||'grid';
+  const el=g('projList');
+  if(!list.length){el.innerHTML='<div class="empty-state"><div class="empty-ico">📁</div><div class="empty-title">No projects</div><div class="empty-sub">Click + New Project to get started.</div></div>';return;}
+  const tc=p=>tasks.filter(t=>t.project_id===p.id&&!t.deleted).length;
+  const dc=p=>tasks.filter(t=>t.project_id===p.id&&t.done&&!t.deleted).length;
+  if(vm==='grid'){
+    el.innerHTML=`<div class="proj-grid">${list.map(p=>{
+      const tt=tc(p),dd=dc(p),pct=tt?Math.round(dd/tt*100):0;
+      return`<div class="proj-card" onclick="openProjectPage('${p.id}')">
+        <div class="proj-card-name">${esc(p.name)}</div>
+        <div class="proj-card-meta">${p.due?'Due '+fmtDate(p.due):'No due date'} · ${tt} tasks</div>
+        <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+        <div class="proj-card-foot">
+          <span class="sbadge ${p.status}">${p.status}</span>
+          <span style="font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">${pct}%</span>
+          <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openProjModal('${p.id}')">✏ Edit</button>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  } else {
+    el.innerHTML=`<div class="card">${list.map(p=>`<div class="tr" onclick="openProjectPage('${p.id}')">
+      <div class="tr-body">
+        <div class="tr-title">${esc(p.name)}</div>
+        <div class="tr-meta"><span class="sbadge ${p.status}">${p.status}</span><span class="tr-meta-item">${dc(p)}/${tc(p)} tasks</span>${p.due?`<span class="tr-meta-item">${fmtDate(p.due)}</span>`:''}</div>
+      </div>
+      <div class="tr-actions"><button class="tr-action" onclick="event.stopPropagation();openProjModal('${p.id}')">✏</button></div>
+    </div>`).join('')}</div>`;
+  }
+}
 function openProjModal(id){editingProjId=id||null;const p=id?projects.find(x=>x.id===id):null;g('projModalTitle').textContent=p?'Edit Project':'New Project';g('pDelBtn').classList.toggle('hidden',!p);g('p-name').value=p?.name||'';g('p-desc').value=p?.desc||'';g('p-start').value=p?.start_date||'';g('p-due').value=p?.due||'';g('p-status').value=p?.status||'active';populateSel('p-customer',customers.filter(c=>!c.deleted),c=>c.id,c=>c.name,p?.customer_id||'');populateSel('p-objective',objectives.filter(o=>!o.deleted),o=>o.id,o=>o.title,p?.objective_id||'');openModal('projModal');setTimeout(()=>g('p-name').focus(),50);}
 function saveProject(){const name=g('p-name').value.trim();if(!name){toast('Name required.','warning');return;}const n=now();const d={name,desc:g('p-desc').value,start_date:g('p-start').value||null,due:g('p-due').value||null,status:g('p-status').value,customer_id:g('p-customer').value||null,objective_id:g('p-objective').value||null,updated_at:n};if(editingProjId){const p=projects.find(x=>x.id===editingProjId);if(p){Object.assign(p,d);audit('project_updated',name);}}else{projects.push({id:uid(),created_at:n,deleted:false,...d});audit('project_created',name);}closeModal('projModal');persist();renderView(currentView);toast(editingProjId?'Project updated.':'Project created.','success');}
+
+/* ── PROJECT DETAIL PAGE ─────────────────────────────── */
+let _currentProjId=null;
+
+function openProjectPage(id){
+  _currentProjId=id;
+  const p=projects.find(x=>x.id===id);
+  if(p){const el=g('projectPageTitle');if(el)el.textContent='📁 '+p.name;}
+  renderProjectPage();
+  openModal('projectPageModal');
+}
+
+function renderProjectPage(){
+  const p=projects.find(x=>x.id===_currentProjId);
+  if(!p)return;
+  const el=g('projectPageContent');
+  if(!el)return;
+  const td=today();
+  const projTasks=tasks.filter(t=>t.project_id===p.id&&!t.deleted);
+  const open=projTasks.filter(t=>!t.done);
+  const done=projTasks.filter(t=>t.done);
+  const overdue=open.filter(t=>t.due&&t.due<td);
+  const pct=projTasks.length?Math.round(done.length/projTasks.length*100):0;
+  const customer=(customers.find(c=>c.id===p.customer_id)||{}).name||'';
+  const objective=(objectives.find(o=>o.id===p.objective_id)||{}).title||'';
+  el.innerHTML=`
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div>
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+          <span class="sbadge ${p.status}">${p.status}</span>
+          ${customer?`<span class="tr-meta-item" style="font-size:var(--fs-xs)">🤝 ${esc(customer)}</span>`:''}
+          ${objective?`<span class="tr-meta-item" style="font-size:var(--fs-xs)">🎯 ${esc(objective)}</span>`:''}
+        </div>
+        ${p.desc?`<div style="font-size:var(--fs-sm);color:var(--t3);margin-bottom:8px;line-height:1.5">${esc(p.desc)}</div>`:''}
+        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">
+          ${p.start_date?`<span>Start: ${fmtDate(p.start_date)}</span>`:''}
+          ${p.due?`<span>Due: ${fmtDate(p.due)}</span>`:''}
+          <span>${projTasks.length} tasks · ${done.length} done · ${open.length} open</span>
+          ${overdue.length?`<span style="color:var(--red)">⚠ ${overdue.length} overdue</span>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:7px;flex-shrink:0">
+        <button class="btn btn-ghost btn-sm" onclick="openProjModal('${p.id}')">✏ Edit Project</button>
+      </div>
+    </div>
+    <!-- Progress bar -->
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--t4);margin-bottom:5px;font-family:var(--mono)">
+        <span>Progress</span><span>${done.length}/${projTasks.length} · ${pct}%</span>
+      </div>
+      <div class="prog-wrap" style="height:8px"><div class="prog-bar" style="width:${pct}%;background:${pct>=100?'var(--grn)':pct>=50?'var(--acc)':'var(--amb)'}"></div></div>
+    </div>
+    <!-- Add task -->
+    <div style="display:flex;gap:7px;margin-bottom:14px">
+      <input class="fi" id="projQuickTask" placeholder="Add a task to this project…" style="flex:1" onkeydown="handleEnter(event,'addProjQuickTask')">
+      <button class="btn btn-primary btn-sm" onclick="addProjQuickTask()">+ Add Task</button>
+      <button class="btn btn-ghost btn-sm" onclick="openTaskModalForProject('${p.id}')">+ Full Form</button>
+    </div>
+    <!-- Task sections -->
+    ${overdue.length?`<div class="list-grp-hdr" style="color:var(--red)">⚠ Overdue (${overdue.length})</div>`+overdue.map(t=>projTaskRow(t)).join(''):''}
+    ${open.filter(t=>!t.due||t.due>=td).length?`<div class="list-grp-hdr">📋 Open (${open.filter(t=>!t.due||t.due>=td).length})</div>`+open.filter(t=>!t.due||t.due>=td).map(t=>projTaskRow(t)).join(''):''}
+    ${!projTasks.length?'<div class="empty-state" style="padding:28px"><div class="empty-ico">✅</div><div class="empty-title">No tasks yet</div><div class="empty-sub">Add your first task above.</div></div>':''}
+    ${done.length?`<div class="list-grp-hdr" style="color:var(--grn)">✅ Done (${done.length})</div>`+done.map(t=>projTaskRow(t)).join(''):''}
+  `;
+}
+
+function projTaskRow(t){
+  const td=today();const od=!t.done&&t.due&&t.due<td;
+  const pcls={high:'high',medium:'medium',low:'low'}[t.priority]||'medium';
+  return`<div class="tr ${t.done?'done':''}">
+    <div class="chk ${t.done?'checked':''}" onclick="toggleTaskInProject('${t.id}')"></div>
+    <div class="tr-body" onclick="openTaskModal('${t.id}')" style="cursor:pointer">
+      <div class="tr-title">${esc(t.title)}</div>
+      <div class="tr-meta">
+        <span class="pbadge ${pcls}">${t.priority||'medium'}</span>
+        ${t.due?`<span class="tr-meta-item ${od?'overdue':''}">${od?'⚠ ':''}${fmtDate(t.due)}</span>`:''}
+        ${t.person_id?`<span class="tr-meta-item">👤 ${esc((people.find(p=>p.id===t.person_id)||{}).name||'')}</span>`:''}
+      </div>
+    </div>
+    <div class="tr-actions">
+      <button class="tr-action" onclick="openTaskModal('${t.id}')">✏</button>
+      <button class="tr-action" onclick="removeTaskFromProject('${t.id}')">✕</button>
+    </div>
+  </div>`;
+}
+
+function toggleTaskInProject(id){
+  toggleTask(id);
+  setTimeout(()=>renderProjectPage(),50);
+}
+
+function addProjQuickTask(){
+  const inp=g('projQuickTask');
+  const title=inp?.value?.trim();
+  if(!title)return;
+  tasks.push({id:uid(),title,project_id:_currentProjId,due:today(),priority:'medium',
+    notes:'',person_id:null,dept:'',customer_id:null,objective_id:null,
+    someday:false,recurring:false,recur_freq:null,done:false,archived:false,
+    deleted:false,time_spent:0,timer_running:false,created_at:now(),updated_at:now()});
+  inp.value='';
+  persist();
+  renderProjectPage();
+}
+
+function openTaskModalForProject(projId){
+  openTaskModal();
+  setTimeout(()=>{
+    const sel=g('t-project');
+    if(sel)for(let i=0;i<sel.options.length;i++)if(sel.options[i].value===projId){sel.selectedIndex=i;break;}
+  },60);
+}
+
+function removeTaskFromProject(id){
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  t.project_id=null;t.updated_at=now();
+  persist();renderProjectPage();
+  toast('Task unlinked from project.','info');
+}
 function deleteProject(){if(!editingProjId)return;closeModal('projModal');showConfirm('Delete project?',()=>{const p=projects.find(x=>x.id===editingProjId);if(p){p.deleted=true;p.updated_at=now();trash.push({...p,trashed_at:now(),type:'project'});persist();renderView(currentView);}},'Delete Project','Delete');}
 
 /* ═══ NOTES with templates + linking ═══ */
@@ -2250,7 +2553,32 @@ function renderPlanning(){g('planningToolbarRight').innerHTML='<button class="bt
 function renderDailyPlan(){const td=today();const el=g('planningContent');const dueTasks=tasks.filter(t=>t.due===td&&!t.done&&!t.deleted&&!t.someday);const overdueT=tasks.filter(t=>t.due&&t.due<td&&!t.done&&!t.deleted&&!t.someday);const doneT=tasks.filter(t=>t.due===td&&t.done&&!t.deleted);const dayEvs=events.filter(e=>e.date===td&&!e.deleted).sort((a,b)=>(a.time||'')<(b.time||'')?-1:1);const dayBoxes=timeboxes.filter(tb=>tb.date===td&&!tb.deleted);const dq1=dueTasks.filter(t=>t.priority==='high');const dq2=[...dueTasks.filter(t=>t.priority!=='high'),...overdueT];const timeline=Array.from({length:16},(_,i)=>i+6).map(h=>{const hs=String(h).padStart(2,'0');const ev=dayEvs.find(e=>(e.time||'').startsWith(hs));const box=dayBoxes.find(b=>b.hour===h);return`<div class="tl-row" ondragover="event.preventDefault()" ondrop="onDropTimebox(event,'${td}',${h})" style="min-height:36px"><div class="tl-time">${hs}</div>${ev?`<div style="position:absolute;left:52px;right:3px;top:2px;background:var(--grn-l);color:var(--grn);border-radius:var(--rs);padding:2px 6px;font-size:10px;font-weight:600;z-index:1">${esc(ev.title)}</div>`:''}${box&&!ev?`<div class="tl-timebox" onclick="removeTimebox('${box.id}')" title="Click to remove">${esc((tasks.find(t=>t.id===box.task_id)||{}).title||'')}</div>`:''}</div>`;}).join('');el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div class="card"><div class="card-head"><span class="card-title">📅 Today — ${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</span></div><div style="padding:0">${dq1.length?`<div class="list-grp-hdr" style="color:var(--red)">🔴 Do First (${dq1.length})</div>`+dq1.map(t=>renderTaskRow(t,false)).join(''):''}${dq2.length?`<div class="list-grp-hdr">📋 Pending (${dq2.length})</div>`+dq2.map(t=>renderTaskRow(t,false)).join(''):''}${doneT.length?`<div class="list-grp-hdr" style="color:var(--grn)">✅ Done (${doneT.length})</div>`+doneT.map(t=>renderTaskRow(t,true)).join(''):''}${!dueTasks.length&&!overdueT.length?`<div class="empty-state" style="padding:20px"><div class="empty-sub">No tasks due today. <button class="btn btn-ghost btn-xs" onclick="openTaskModal()">+ Add one</button></div></div>`:''}</div></div><div class="card"><div class="card-head"><span class="card-title">⏱ Timeline — drag tasks here</span><button class="btn btn-ghost btn-xs" onclick="openEventModal(null,'${td}')">+ Event</button></div><div style="max-height:500px;overflow-y:auto">${timeline}</div></div></div>`;}
 function renderWeeklyBoard(){const td=today();const el=g('planningContent');const days=[];for(let i=0;i<7;i++)days.push(addDays(td,i));const allOpen=tasks.filter(t=>!t.done&&!t.deleted&&!t.someday);const maxLoad=Math.max(...days.map(d=>allOpen.filter(t=>t.due===d).length),1);el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">${days.map(d=>{const isToday=d===td;const dayTasks=allOpen.filter(t=>t.due===d);const load=dayTasks.length/maxLoad;const lc=load>0.7?'var(--red)':load>0.4?'var(--amb)':'var(--grn)';const dn=new Date(d+'T12:00:00');const label=dn.toLocaleDateString('en-IN',{weekday:'short'})+' '+dn.getDate();return`<div style="background:var(--card-bg);border:1px solid ${isToday?'var(--acc)':'var(--bdr)'};border-radius:var(--r);padding:10px;min-height:160px"><div style="font-size:var(--fs-xs);font-weight:700;color:${isToday?'var(--acc3)':'var(--t2)'};font-family:var(--mono);display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span>${label}</span><button class="tr-action" onclick="openTaskModalForDate('${d}')" style="font-size:11px">+</button></div>${dayTasks.slice(0,6).map(t=>`<div class="planning-task-item task-draggable" draggable="true" data-action="openTask" data-id="${t.id}" ondragstart="onTaskDragStart(event,'${t.id}')"><div class="chk ${t.done?'checked':''}" data-action="toggleTask" data-id="${t.id}" style="width:13px;height:13px;flex-shrink:0"></div><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:11px">${esc(t.title)}</span></div>`).join('')}${dayTasks.length>6?`<div style="font-size:10px;color:var(--t4);padding:2px 5px;font-family:var(--mono)">+${dayTasks.length-6} more</div>`:''}<div class="planning-drop-zone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="onDropToDay(event,'${d}')" style="margin-top:6px">Drop here</div><div class="load-bar"><div class="load-bar-fill" style="width:${Math.round(load*100)}%;background:${lc}"></div></div></div>`;}).join('')}</div>`;}
 function openTaskModalForDate(date){editingTaskId=null;openTaskModal();setTimeout(()=>{g('t-due').value=date;},60);}
-function onTaskDragStart(e,id){_draggingTaskId=id;e.dataTransfer.effectAllowed='move';}
+function onTaskDragStart(e,id){_draggingTaskId=id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',id);}
+
+/* Drop onto Eisenhower quadrant — updates priority + due date to match quadrant */
+function onDropMatrix(e,quadrant){
+  e.preventDefault();
+  const id=_draggingTaskId||e.dataTransfer.getData('text/plain');
+  if(!id)return;
+  const t=tasks.find(x=>x.id===id);
+  if(!t)return;
+  const td=today();
+  // Q0=Do First (high+urgent), Q1=Schedule (high+not urgent), Q2=Delegate (medium+urgent), Q3=Eliminate (low+not urgent)
+  const actions=[
+    {priority:'high',  due: t.due&&t.due>=td ? t.due : td,         label:'Do First — set High + due today'},
+    {priority:'high',  due: t.due&&t.due>addDays(td,3)?t.due:addDays(td,7), label:'Schedule — set High + due next week'},
+    {priority:'medium',due: t.due&&t.due>=td&&t.due<=addDays(td,3)?t.due:addDays(td,2), label:'Delegate — set Medium + due in 2 days'},
+    {priority:'low',   due: null,                                   label:'Eliminate — set Low, clear due date'},
+  ];
+  const action=actions[quadrant];
+  t.priority=action.priority;
+  t.due=action.due;
+  t.updated_at=now();
+  _draggingTaskId=null;
+  persist();
+  renderDashboard();
+  toast(`${action.label}`,'success');
+}
 function onDropToDay(e,date){e.preventDefault();e.currentTarget.classList.remove('drag-over');if(!_draggingTaskId)return;const t=tasks.find(x=>x.id===_draggingTaskId);if(t){t.due=date;t.updated_at=now();persist();renderPlanning();}toast(`Task moved to ${fmtDate(date)}`,'success');_draggingTaskId=null;}
 
 /* ═══ SCHEDULE ═══ */
@@ -2626,6 +2954,7 @@ const MODAL_ENTER_MAP={
   objModal:'saveObjective',
   habitModal:'saveHabit',
   noteModal:'saveNoteModal',
+  projectPageModal:'addProjQuickTask',
 };
 let _lastEnterTime=0;
 function handleEnter(e,fnName){
