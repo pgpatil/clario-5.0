@@ -1097,19 +1097,71 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
               </div>
             </div>
           </div>
-          <div class="card"><div class="card-head"><span class="card-title">📦 Data</span></div>
+          <div class="card"><div class="card-head"><span class="card-title">📦 Data — Import & Export</span></div>
             <div class="card-body">
-              <div style="display:flex;flex-direction:column;gap:7px">
+              <!-- JSON Backup -->
+              <div style="font-size:var(--fs-xs);font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;font-family:var(--mono);margin-bottom:6px">Full Backup</div>
+              <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
                 <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ Export JSON Backup</button>
-                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">⬆ Import JSON</button>
+                <button class="btn btn-ghost btn-sm" onclick="g('importFile').click()">⬆ Import JSON</button>
                 <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
-                <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()">📄 Download Data Template (CSV)</button>
-                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('templateImportFile').click()">⬆ Upload from Template (CSV)</button>
-                <input type="file" id="templateImportFile" accept=".csv" style="display:none" onchange="importFromTemplate(event)">
-                <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
-                <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--bdr)">
-                  <button class="btn btn-danger btn-sm" onclick="confirmWipeData()">🗑 Wipe All Data</button>
+              </div>
+              <!-- Per-type CSV -->
+              <div style="font-size:var(--fs-xs);font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.8px;font-family:var(--mono);margin-bottom:8px">CSV Import / Export by Type</div>
+              <div style="display:grid;gap:8px">
+                <!-- Tasks -->
+                <div style="background:var(--surf2);border-radius:var(--rs);padding:9px 12px">
+                  <div style="font-size:var(--fs-sm);font-weight:700;color:var(--t1);margin-bottom:6px">✅ Tasks & Calls</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-ghost btn-xs" onclick="downloadTemplate('tasks')">📄 Template</button>
+                    <button class="btn btn-ghost btn-xs" onclick="g('tplImportTasks').click()">⬆ Import</button>
+                    <button class="btn btn-ghost btn-xs" onclick="exportCSV('tasks')">⬇ Export</button>
+                    <input type="file" id="tplImportTasks" accept=".csv" style="display:none" onchange="importFromTemplate(event,'tasks')">
+                  </div>
                 </div>
+                <!-- People -->
+                <div style="background:var(--surf2);border-radius:var(--rs);padding:9px 12px">
+                  <div style="font-size:var(--fs-sm);font-weight:700;color:var(--t1);margin-bottom:6px">👥 People</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-ghost btn-xs" onclick="downloadTemplate('people')">📄 Template</button>
+                    <button class="btn btn-ghost btn-xs" onclick="g('tplImportPeople').click()">⬆ Import</button>
+                    <button class="btn btn-ghost btn-xs" onclick="exportCSV('people')">⬇ Export</button>
+                    <input type="file" id="tplImportPeople" accept=".csv" style="display:none" onchange="importFromTemplate(event,'people')">
+                  </div>
+                </div>
+                <!-- Customers -->
+                <div style="background:var(--surf2);border-radius:var(--rs);padding:9px 12px">
+                  <div style="font-size:var(--fs-sm);font-weight:700;color:var(--t1);margin-bottom:6px">🤝 Customers</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-ghost btn-xs" onclick="downloadTemplate('customers')">📄 Template</button>
+                    <button class="btn btn-ghost btn-xs" onclick="g('tplImportCustomers').click()">⬆ Import</button>
+                    <button class="btn btn-ghost btn-xs" onclick="exportCSV('customers')">⬇ Export</button>
+                    <input type="file" id="tplImportCustomers" accept=".csv" style="display:none" onchange="importFromTemplate(event,'customers')">
+                  </div>
+                </div>
+                <!-- Departments -->
+                <div style="background:var(--surf2);border-radius:var(--rs);padding:9px 12px">
+                  <div style="font-size:var(--fs-sm);font-weight:700;color:var(--t1);margin-bottom:6px">🏢 Departments</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-ghost btn-xs" onclick="downloadTemplate('depts')">📄 Template</button>
+                    <button class="btn btn-ghost btn-xs" onclick="g('tplImportDepts').click()">⬆ Import</button>
+                    <button class="btn btn-ghost btn-xs" onclick="exportCSV('depts')">⬇ Export</button>
+                    <input type="file" id="tplImportDepts" accept=".csv" style="display:none" onchange="importFromTemplate(event,'depts')">
+                  </div>
+                </div>
+                <!-- Projects -->
+                <div style="background:var(--surf2);border-radius:var(--rs);padding:9px 12px">
+                  <div style="font-size:var(--fs-sm);font-weight:700;color:var(--t1);margin-bottom:6px">📁 Projects</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-ghost btn-xs" onclick="downloadTemplate('projects')">📄 Template</button>
+                    <button class="btn btn-ghost btn-xs" onclick="g('tplImportProjects').click()">⬆ Import</button>
+                    <button class="btn btn-ghost btn-xs" onclick="exportCSV('projects')">⬇ Export</button>
+                    <input type="file" id="tplImportProjects" accept=".csv" style="display:none" onchange="importFromTemplate(event,'projects')">
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--bdr)">
+                <button class="btn btn-danger btn-sm" onclick="confirmWipeData()">🗑 Wipe All Data</button>
               </div>
             </div>
           </div>
@@ -2178,14 +2230,245 @@ function renderAuditLog(){const el=g('auditLog');if(!el)return;const items=[...a
 function changePin(){const cur=g('curPin').value,nw=g('newPin').value,conf=g('confPin').value;const stored=localStorage.getItem(PIN_KEY);if(stored&&hashPin(cur)!==stored){toast('Current PIN incorrect.','error');return;}if(nw.length!==4||!/^\d{4}$/.test(nw)){toast('PIN must be 4 digits.','warning');return;}if(nw!==conf){toast("PINs don't match.",'warning');return;}localStorage.setItem(PIN_KEY,hashPin(nw));['curPin','newPin','confPin'].forEach(id=>g(id).value='');toast('PIN updated.','success');}
 
 /* ═══ DATA EXPORT/IMPORT ═══ */
+/* ═══ DATA EXPORT / IMPORT — all types ═══ */
+
 function exportJSON(){dlText(JSON.stringify(getState(),null,2),'clario51-'+today()+'.json');toast('Exported.','success');}
+
 function importJSON(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const data=JSON.parse(e.target.result);showConfirm('Merge imported data with current data?',()=>{mergeRemote(data);persist();renderView(currentView);toast('Import complete.','success');});}catch{toast('Invalid JSON.','error');}};r.readAsText(file);ev.target.value='';}
-function exportCSV(){const rows=[['Type','Title/Name','Due','Priority','Status','Person','Dept','Customer','Notes','Updated']];tasks.filter(t=>!t.deleted).forEach(t=>rows.push(['task',t.title||'',t.due||'',t.priority||'',t.done?'done':'pending',(people.find(p=>p.id===t.person_id)||{}).name||'',t.dept||'',(customers.find(c=>c.id===t.customer_id)||{}).name||'',t.notes||'',t.updated_at||'']));calls.filter(c=>!c.deleted).forEach(c=>rows.push(['call',c.name||'',c.datetime?.slice(0,10)||'','',c.status||'',(people.find(p=>p.id===c.person_id)||{}).name||'','',(customers.find(x=>x.id===c.customer_id)||{}).name||'',c.notes||'',c.updated_at||'']));const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');dlText(csv,'clario51-'+today()+'.csv');toast('CSV exported.','success');}
-function downloadTemplate(){const rows=['"Type","Title/Name","Due Date (YYYY-MM-DD)","Priority (high/medium/low)","Status (pending/done)","Person Name","Department","Customer Name","Notes"','"task","Prepare quarterly report","2025-04-30","high","pending","John Smith","Sales","Acme Corp","Include Q1 metrics"','"call","Follow up with client","2025-04-20","medium","pending","","","Acme Corp","Re: pricing proposal"','"note","Meeting summary","","","","","Sales","","Key decisions from last standup"'];dlText(rows.join('\n'),'clario51-template.csv');toast('Template downloaded.','success');}
-function importFromTemplate(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const lines=e.target.result.split('\n').filter(l=>l.trim()&&!l.startsWith('"Type"'));const preview=[];lines.forEach(line=>{const cols=line.split('","').map(c=>c.replace(/^"|"$/g,''));const[type,title,due,priority,status,personName,dept,customerName,notes]=cols;if(!title)return;preview.push({type:type||'task',title,due:due||null,priority:priority||'medium',status:status||'pending',personName,dept,customerName,notes});});_pendingImport=preview;g('templatePreviewContent').innerHTML=`<div style="font-size:var(--fs-sm);color:var(--t2);margin-bottom:12px">Found <strong>${preview.length}</strong> items to import:</div><div style="max-height:300px;overflow-y:auto"><table style="width:100%;font-size:var(--fs-xs);border-collapse:collapse"><tr style="color:var(--t4);border-bottom:1px solid var(--bdr)"><th style="text-align:left;padding:4px 8px">Type</th><th style="text-align:left;padding:4px 8px">Title</th><th style="text-align:left;padding:4px 8px">Due</th><th style="text-align:left;padding:4px 8px">Priority</th></tr>${preview.slice(0,20).map(p=>`<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px;color:var(--t3)">${esc(p.type)}</td><td style="padding:4px 8px;color:var(--t1)">${esc(p.title)}</td><td style="padding:4px 8px;color:var(--t4);font-family:var(--mono)">${esc(p.due||'—')}</td><td style="padding:4px 8px"><span class="pbadge ${p.priority||'medium'}">${esc(p.priority||'medium')}</span></td></tr>`).join('')}${preview.length>20?`<tr><td colspan="4" style="padding:6px 8px;color:var(--t4);font-style:italic">… and ${preview.length-20} more</td></tr>`:''}</table></div>`;openModal('templatePreviewModal');}catch(err){toast('Could not parse CSV: '+err.message,'error');}};r.readAsText(file);ev.target.value='';}
-function confirmTemplateImport(){if(!_pendingImport)return;const n=now();_pendingImport.forEach(p=>{const person=people.find(x=>(x.name||'').toLowerCase()===(p.personName||'').toLowerCase());const customer=customers.find(x=>(x.name||'').toLowerCase()===(p.customerName||'').toLowerCase());if(p.type==='call'){calls.push({id:uid(),name:p.title,datetime:p.due?p.due+'T09:00':null,status:p.status||'pending',phone:'',notes:p.notes||'',customer_id:customer?.id||null,person_id:person?.id||null,created_at:n,updated_at:n,deleted:false});}else{tasks.push({id:uid(),title:p.title,due:p.due||null,start_date:null,priority:p.priority||'medium',notes:p.notes||'',project_id:null,person_id:person?.id||null,dept:p.dept||'',customer_id:customer?.id||null,objective_id:null,someday:false,recurring:false,recur_freq:null,done:p.status==='done',archived:false,deleted:false,time_spent:0,timer_running:false,created_at:n,updated_at:n});}});audit('template_import',_pendingImport.length+' items');persist();_pendingImport=null;closeModal('templatePreviewModal');renderView(currentView);toast('Import complete.','success');}
-function confirmWipeData(){showConfirm('Wipe ALL data? This is permanent.',()=>{localStorage.removeItem(LS_KEY);[tasks,calls,notes,projects,people,customers,events,trash,auditLog,objectives,habits,habitLog,timeboxes,timerLog].forEach(a=>a.length=0);depts=[];persist();renderView(currentView);toast('All data wiped.','warning');},'Wipe Data','Wipe Everything');}
+
+// CSV helper
+function csvRow(arr){return arr.map(v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"').join(',');}
 function dlText(text,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+
+// ── EXPORT CSV ─────────────────────────────────────────────
+function exportCSV(type){
+  let rows=[], filename='';
+  if(!type||type==='tasks'){
+    filename='clario51-tasks-calls-'+today()+'.csv';
+    rows.push(csvRow(['Type','Title/Name','Due Date','Priority','Status','Person','Department','Customer','Notes','Project','Updated']));
+    tasks.filter(t=>!t.deleted).forEach(t=>{
+      const pname=(people.find(p=>p.id===t.person_id)||{}).name||'';
+      const cname=(customers.find(c=>c.id===t.customer_id)||{}).name||'';
+      const prname=(projects.find(p=>p.id===t.project_id)||{}).name||'';
+      rows.push(csvRow(['task',t.title||'',t.due||'',t.priority||'medium',t.done?'done':'pending',pname,t.dept||'',cname,t.notes||'',prname,t.updated_at||'']));
+    });
+    calls.filter(c=>!c.deleted).forEach(c=>{
+      const pname=(people.find(p=>p.id===c.person_id)||{}).name||'';
+      const cname=(customers.find(x=>x.id===c.customer_id)||{}).name||'';
+      rows.push(csvRow(['call',c.name||'',c.datetime?.slice(0,10)||'','',c.status||'pending',pname,'',cname,c.notes||'','',c.updated_at||'']));
+    });
+  } else if(type==='people'){
+    filename='clario51-people-'+today()+'.csv';
+    rows.push(csvRow(['Name','Role','Email','Phone','Department']));
+    people.filter(p=>!p.deleted).forEach(p=>rows.push(csvRow([p.name||'',p.role||'',p.email||'',p.phone||'',p.dept||''])));
+  } else if(type==='customers'){
+    filename='clario51-customers-'+today()+'.csv';
+    rows.push(csvRow(['Name','Company','Phone','Email','Notes']));
+    customers.filter(c=>!c.deleted).forEach(c=>rows.push(csvRow([c.name||'',c.company||'',c.phone||'',c.email||'',c.notes||''])));
+  } else if(type==='depts'){
+    filename='clario51-departments-'+today()+'.csv';
+    rows.push(csvRow(['Department Name']));
+    depts.forEach(d=>rows.push(csvRow([d])));
+  } else if(type==='projects'){
+    filename='clario51-projects-'+today()+'.csv';
+    rows.push(csvRow(['Name','Description','Status','Start Date','Due Date','Customer']));
+    projects.filter(p=>!p.deleted).forEach(p=>{
+      const cname=(customers.find(c=>c.id===p.customer_id)||{}).name||'';
+      rows.push(csvRow([p.name||'',p.desc||'',p.status||'active',p.start_date||'',p.due||'',cname]));
+    });
+  }
+  if(rows.length){dlText(rows.join('\n'),filename);toast('Exported: '+filename,'success');}
+}
+
+// ── DOWNLOAD TEMPLATE ──────────────────────────────────────
+function downloadTemplate(type){
+  let rows=[], filename='';
+  if(type==='tasks'){
+    filename='clario51-template-tasks.csv';
+    rows=[
+      csvRow(['Type','Title/Name','Due Date (YYYY-MM-DD)','Priority (high/medium/low)','Status (pending/done)','Person Name','Department','Customer Name','Notes','Project Name']),
+      csvRow(['task','Prepare quarterly report','2025-04-30','high','pending','John Smith','Sales','Acme Corp','Include Q1 metrics','Q2 Planning']),
+      csvRow(['task','Review contract','2025-05-01','medium','pending','','Legal','Beta Ltd','','Legal Review']),
+      csvRow(['call','Follow up with client','2025-04-20','medium','pending','','','Acme Corp','Re: pricing proposal','']),
+      csvRow(['call','Monthly check-in','2025-04-25','low','pending','Sarah Jones','','','',''])
+    ];
+  } else if(type==='people'){
+    filename='clario51-template-people.csv';
+    rows=[
+      csvRow(['Name','Role','Email','Phone','Department']),
+      csvRow(['John Smith','Sales Manager','john@example.com','+91 98765 43210','Sales']),
+      csvRow(['Sarah Jones','Developer','sarah@example.com','+91 87654 32109','Engineering']),
+      csvRow(['Raj Kumar','Finance Head','raj@example.com','+91 76543 21098','Finance'])
+    ];
+  } else if(type==='customers'){
+    filename='clario51-template-customers.csv';
+    rows=[
+      csvRow(['Name','Company','Phone','Email','Notes']),
+      csvRow(['Amit Patel','Acme Corp','+91 98001 23456','amit@acme.com','Key account — renewal in June']),
+      csvRow(['Priya Singh','Beta Ltd','+91 87001 23456','priya@beta.com','New client since Jan 2025']),
+      csvRow(['Vikram Nair','Gamma Inc','+91 76001 23456','vikram@gamma.com',''])
+    ];
+  } else if(type==='depts'){
+    filename='clario51-template-departments.csv';
+    rows=[
+      csvRow(['Department Name']),
+      csvRow(['Sales']),
+      csvRow(['Engineering']),
+      csvRow(['Finance']),
+      csvRow(['Legal']),
+      csvRow(['Operations']),
+      csvRow(['HR'])
+    ];
+  } else if(type==='projects'){
+    filename='clario51-template-projects.csv';
+    rows=[
+      csvRow(['Name','Description','Status (active/done/paused)','Start Date (YYYY-MM-DD)','Due Date (YYYY-MM-DD)','Customer Name']),
+      csvRow(['Website Redesign','Full redesign of company website','active','2025-04-01','2025-06-30','Acme Corp']),
+      csvRow(['Q2 Sales Drive','Outreach and conversion push','active','2025-04-01','2025-06-30','']),
+      csvRow(['Annual Audit','Yearly financial audit','paused','2025-03-01','2025-04-30',''])
+    ];
+  }
+  if(rows.length){dlText(rows.join('\n'),filename);toast('Template downloaded: '+filename,'success');}
+}
+
+// ── IMPORT FROM TEMPLATE ───────────────────────────────────
+function importFromTemplate(ev, type){
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const rawLines=e.target.result.split('\n');
+      // Skip header row (first non-empty line)
+      const lines=rawLines.slice(1).filter(l=>l.trim());
+      const preview=[];
+      lines.forEach(line=>{
+        // Parse CSV properly (handles quoted fields)
+        const cols=parseCsvLine(line);
+        if(!cols[0]||!cols[0].trim())return;
+        if(type==='tasks'){
+          const[t,title,due,priority,status,personName,dept,customerName,notes,projectName]=cols;
+          if(!title)return;
+          preview.push({type:t||'task',title,due:due||null,priority:priority||'medium',status:status||'pending',personName,dept,customerName,notes,projectName});
+        } else if(type==='people'){
+          const[name,role,email,phone,dept]=cols;
+          if(!name)return;
+          preview.push({type:'person',name,role,email,phone,dept});
+        } else if(type==='customers'){
+          const[name,company,phone,email,notes]=cols;
+          if(!name)return;
+          preview.push({type:'customer',name,company,phone,email,notes});
+        } else if(type==='depts'){
+          const[name]=cols;
+          if(!name)return;
+          preview.push({type:'dept',name});
+        } else if(type==='projects'){
+          const[name,desc,status,start_date,due,customerName]=cols;
+          if(!name)return;
+          preview.push({type:'project',name,desc,status:status||'active',start_date:start_date||null,due:due||null,customerName});
+        }
+      });
+      if(!preview.length){toast('No valid rows found in CSV.','warning');return;}
+      _pendingImport=preview;
+      _pendingImportType=type;
+      renderImportPreview(preview,type);
+      openModal('templatePreviewModal');
+    }catch(err){toast('Could not parse CSV: '+err.message,'error');}
+  };
+  r.readAsText(file);ev.target.value='';
+}
+
+function parseCsvLine(line){
+  // Handles quoted fields, commas inside quotes
+  const cols=[];let cur='',inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}
+    else cur+=ch;
+  }
+  cols.push(cur.trim());
+  return cols;
+}
+
+function renderImportPreview(preview, type){
+  const typeLabels={tasks:'Tasks & Calls',people:'People',customers:'Customers',depts:'Departments',projects:'Projects'};
+  let tableHTML='';
+  if(type==='people'){
+    tableHTML=`<tr style="color:var(--t4);border-bottom:1px solid var(--bdr)"><th style="text-align:left;padding:4px 8px">Name</th><th style="text-align:left;padding:4px 8px">Role</th><th style="text-align:left;padding:4px 8px">Email</th><th style="text-align:left;padding:4px 8px">Dept</th></tr>`+
+      preview.slice(0,20).map(p=>`<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px;color:var(--t1)">${esc(p.name)}</td><td style="padding:4px 8px;color:var(--t3)">${esc(p.role||'—')}</td><td style="padding:4px 8px;color:var(--t4);font-family:var(--mono)">${esc(p.email||'—')}</td><td style="padding:4px 8px">${esc(p.dept||'—')}</td></tr>`).join('');
+  } else if(type==='customers'){
+    tableHTML=`<tr style="color:var(--t4);border-bottom:1px solid var(--bdr)"><th style="text-align:left;padding:4px 8px">Name</th><th style="text-align:left;padding:4px 8px">Company</th><th style="text-align:left;padding:4px 8px">Phone</th><th style="text-align:left;padding:4px 8px">Email</th></tr>`+
+      preview.slice(0,20).map(c=>`<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px;color:var(--t1)">${esc(c.name)}</td><td style="padding:4px 8px;color:var(--t3)">${esc(c.company||'—')}</td><td style="padding:4px 8px;color:var(--t4);font-family:var(--mono)">${esc(c.phone||'—')}</td><td style="padding:4px 8px;color:var(--t4)">${esc(c.email||'—')}</td></tr>`).join('');
+  } else if(type==='depts'){
+    tableHTML=`<tr style="color:var(--t4);border-bottom:1px solid var(--bdr)"><th style="text-align:left;padding:4px 8px">Department Name</th></tr>`+
+      preview.slice(0,20).map(d=>`<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px;color:var(--t1)">${esc(d.name)}</td></tr>`).join('');
+  } else if(type==='projects'){
+    tableHTML=`<tr style="color:var(--t4);border-bottom:1px solid var(--bdr)"><th style="text-align:left;padding:4px 8px">Name</th><th style="text-align:left;padding:4px 8px">Status</th><th style="text-align:left;padding:4px 8px">Due</th><th style="text-align:left;padding:4px 8px">Customer</th></tr>`+
+      preview.slice(0,20).map(p=>`<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px;color:var(--t1)">${esc(p.name)}</td><td style="padding:4px 8px"><span class="sbadge ${p.status}">${esc(p.status)}</span></td><td style="padding:4px 8px;color:var(--t4);font-family:var(--mono)">${esc(p.due||'—')}</td><td style="padding:4px 8px;color:var(--t3)">${esc(p.customerName||'—')}</td></tr>`).join('');
+  } else {
+    // tasks/calls
+    tableHTML=`<tr style="color:var(--t4);border-bottom:1px solid var(--bdr)"><th style="text-align:left;padding:4px 8px">Type</th><th style="text-align:left;padding:4px 8px">Title</th><th style="text-align:left;padding:4px 8px">Due</th><th style="text-align:left;padding:4px 8px">Priority</th></tr>`+
+      preview.slice(0,20).map(p=>`<tr style="border-bottom:1px solid var(--bdr)"><td style="padding:4px 8px;color:var(--t3)">${esc(p.type)}</td><td style="padding:4px 8px;color:var(--t1)">${esc(p.title||p.name)}</td><td style="padding:4px 8px;color:var(--t4);font-family:var(--mono)">${esc(p.due||'—')}</td><td style="padding:4px 8px"><span class="pbadge ${p.priority||'medium'}">${esc(p.priority||'—')}</span></td></tr>`).join('');
+  }
+  const extra=preview.length>20?`<tr><td colspan="4" style="padding:6px 8px;color:var(--t4);font-style:italic">… and ${preview.length-20} more</td></tr>`:'';
+  g('templatePreviewContent').innerHTML=`
+    <div style="margin-bottom:10px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:var(--fs-sm);color:var(--t2)">Found <strong>${preview.length}</strong> ${typeLabels[type]||'items'} to import</span>
+      <span class="sbadge" style="background:var(--grn-l);color:var(--grn)">${type}</span>
+    </div>
+    <div style="max-height:300px;overflow-y:auto">
+      <table style="width:100%;font-size:var(--fs-xs);border-collapse:collapse">${tableHTML}${extra}</table>
+    </div>
+    <div style="margin-top:10px;font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">
+      ℹ Existing records with the same name will be skipped (no duplicates created).
+    </div>`;
+}
+
+let _pendingImportType='tasks';
+
+function confirmTemplateImport(){
+  if(!_pendingImport)return;
+  const n=now();let added=0,skipped=0;
+  _pendingImport.forEach(p=>{
+    if(_pendingImportType==='people'){
+      if(people.find(x=>x.name.toLowerCase()===p.name.toLowerCase()&&!x.deleted)){skipped++;return;}
+      people.push({id:uid(),name:p.name,role:p.role||'',email:p.email||'',phone:p.phone||'',dept:p.dept||'',deleted:false,created_at:n,updated_at:n});
+      // Auto-add dept if new
+      if(p.dept&&!depts.includes(p.dept))depts.push(p.dept);
+      added++;
+    } else if(_pendingImportType==='customers'){
+      if(customers.find(x=>x.name.toLowerCase()===p.name.toLowerCase()&&!x.deleted)){skipped++;return;}
+      customers.push({id:uid(),name:p.name,company:p.company||'',phone:p.phone||'',email:p.email||'',notes:p.notes||'',deleted:false,created_at:n,updated_at:n});
+      added++;
+    } else if(_pendingImportType==='depts'){
+      if(depts.includes(p.name)){skipped++;return;}
+      depts.push(p.name);added++;
+    } else if(_pendingImportType==='projects'){
+      if(projects.find(x=>x.name.toLowerCase()===p.name.toLowerCase()&&!x.deleted)){skipped++;return;}
+      const customer=customers.find(x=>(x.name||'').toLowerCase()===(p.customerName||'').toLowerCase());
+      projects.push({id:uid(),name:p.name,desc:p.desc||'',status:p.status||'active',start_date:p.start_date||null,due:p.due||null,customer_id:customer?.id||null,objective_id:null,deleted:false,created_at:n,updated_at:n});
+      added++;
+    } else {
+      // tasks/calls
+      const person=people.find(x=>(x.name||'').toLowerCase()===(p.personName||'').toLowerCase());
+      const customer=customers.find(x=>(x.name||'').toLowerCase()===(p.customerName||'').toLowerCase());
+      const project=projects.find(x=>(x.name||'').toLowerCase()===(p.projectName||'').toLowerCase());
+      if(p.type==='call'){
+        calls.push({id:uid(),name:p.title,datetime:p.due?p.due+'T09:00':null,status:p.status||'pending',phone:'',notes:p.notes||'',customer_id:customer?.id||null,person_id:person?.id||null,created_at:n,updated_at:n,deleted:false});
+      } else {
+        tasks.push({id:uid(),title:p.title,due:p.due||null,start_date:null,priority:p.priority||'medium',notes:p.notes||'',project_id:project?.id||null,person_id:person?.id||null,dept:p.dept||'',customer_id:customer?.id||null,objective_id:null,someday:false,recurring:false,recur_freq:null,done:p.status==='done',archived:false,deleted:false,time_spent:0,timer_running:false,created_at:n,updated_at:n});
+      }
+      added++;
+    }
+  });
+  audit('template_import',`${added} ${_pendingImportType} imported, ${skipped} skipped`);
+  persist();_pendingImport=null;
+  closeModal('templatePreviewModal');
+  renderView(currentView);
+  toast(`Import done: ${added} added${skipped?', '+skipped+' skipped (duplicates)':''}.`,'success');
+}
+
+function confirmWipeData(){showConfirm('Wipe ALL data? This is permanent.',()=>{localStorage.removeItem(LS_KEY);[tasks,calls,notes,projects,people,customers,events,trash,auditLog,objectives,habits,habitLog,timeboxes,timerLog].forEach(a=>a.length=0);depts=[];persist();renderView(currentView);toast('All data wiped.','warning');},'Wipe Data','Wipe Everything');}
 
 /* ═══ WEEKLY WIZARD ═══ */
 let _wizStep=0,_wizCaptures=[];
