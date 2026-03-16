@@ -314,15 +314,18 @@ textarea.fi{resize:vertical;min-height:78px}
 .bento-card{background:var(--card-bg);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;transition:border-color var(--tr)}
 .bento-card:hover{border-color:var(--bdr2)}
 .b-focus{grid-column:span 4}
-.b-calls{grid-column:span 8}
 .b-frog{grid-column:span 4}
+.b-sidebar{grid-column:span 4}
 .b-matrix{grid-column:span 8}
-.b-tasks{grid-column:span 7}
-.b-sidebar{grid-column:span 5}
+.b-calls{grid-column:span 8}
+.b-tasks{grid-column:span 8}
 .b-stats{grid-column:span 12}
-.bento.high-overdue .b-tasks{grid-column:span 9}
-.bento.high-overdue .b-sidebar{grid-column:span 3}
+.bento.high-overdue .b-tasks{grid-column:span 8}
+.bento.high-overdue .b-sidebar{grid-column:span 4}
 .bento.high-calls .b-calls{grid-column:span 8}
+/* Mini matrix task rows with checkmark */
+.mini-task{display:flex;align-items:center;gap:4px;padding:3px 4px;border-radius:3px;cursor:pointer;font-size:11px;color:var(--t2);transition:background var(--tr)}
+.mini-task:hover{background:var(--surf2)}
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .stat-card{background:var(--card-bg);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 15px;position:relative;overflow:hidden;transition:border-color var(--tr)}
 .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--t5)}
@@ -1269,7 +1272,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="taskModalTitle">Add Task</span><button class="modal-close" onclick="closeModal('taskModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="t-title" placeholder="Task title…" onkeydown="handleEnter(event,'saveTask()')" onkeyup="handleEnter(event,'saveTask()')"></div>
+      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="t-title" placeholder="Task title…"></div>
       <div class="form-row-2">
         <div><label class="form-label">Due Date</label><input class="fi" type="date" id="t-due"></div>
         <div><label class="form-label">Start Date (Defer)</label><input class="fi" type="date" id="t-start"></div>
@@ -1308,7 +1311,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="callModalTitle">Add Call</span><button class="modal-close" onclick="closeModal('callModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Contact Name *</label><input class="fi" id="c-name" placeholder="Name…" onkeydown="handleEnter(event,'saveCall()')" onkeyup="handleEnter(event,'saveCall()')"></div>
+      <div class="form-row"><label class="form-label">Contact Name *</label><input class="fi" id="c-name" placeholder="Name…"></div>
       <div class="form-row-2">
         <div><label class="form-label">Phone</label><input class="fi" id="c-phone" placeholder="+91…"></div>
         <div><label class="form-label">Date &amp; Time</label><input class="fi" type="datetime-local" id="c-datetime"></div>
@@ -1335,7 +1338,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="projModalTitle">Add Project</span><button class="modal-close" onclick="closeModal('projModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="p-name" placeholder="Project name…" onkeydown="handleEnter(event,'saveProject()')" onkeyup="handleEnter(event,'saveProject()')"></div>
+      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="p-name" placeholder="Project name…"></div>
       <div class="form-row"><label class="form-label">Description</label><textarea class="fi" id="p-desc" rows="2" placeholder="Brief description…"></textarea></div>
       <div class="form-row-2">
         <div><label class="form-label">Start Date</label><input class="fi" type="date" id="p-start"></div>
@@ -1408,7 +1411,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="eventModalTitle">Add Event</span><button class="modal-close" onclick="closeModal('eventModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="ev-title" placeholder="Event title…" onkeydown="handleEnter(event,'saveEvent()')" onkeyup="handleEnter(event,'saveEvent()')"></div>
+      <div class="form-row"><label class="form-label">Title *</label><input class="fi" id="ev-title" placeholder="Event title…"></div>
       <div class="form-row-2">
         <div><label class="form-label">Date</label><input class="fi" type="date" id="ev-date"></div>
         <div><label class="form-label">Time</label><input class="fi" type="time" id="ev-time"></div>
@@ -1434,7 +1437,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="personModalTitle">Add Person</span><button class="modal-close" onclick="closeModal('personModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Full Name *</label><input class="fi" id="pe-name" placeholder="Name…" onkeydown="handleEnter(event,'savePerson()')" onkeyup="handleEnter(event,'savePerson()')"></div>
+      <div class="form-row"><label class="form-label">Full Name *</label><input class="fi" id="pe-name" placeholder="Name…"></div>
       <div class="form-row-2">
         <div><label class="form-label">Role</label><input class="fi" id="pe-role" placeholder="e.g. Sales Lead"></div>
         <div><label class="form-label">Department</label><select class="fi" id="pe-dept"><option value="">None</option></select></div>
@@ -1457,7 +1460,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="custModalTitle">Add Customer</span><button class="modal-close" onclick="closeModal('custModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="cu-name" placeholder="Contact name…" onkeydown="handleEnter(event,'saveCustomer()')" onkeyup="handleEnter(event,'saveCustomer()')"></div>
+      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="cu-name" placeholder="Contact name…"></div>
       <div class="form-row"><label class="form-label">Company</label><input class="fi" id="cu-company" placeholder="Company name…"></div>
       <div class="form-row-2">
         <div><label class="form-label">Phone</label><input class="fi" id="cu-phone" placeholder="+91…"></div>
@@ -1478,7 +1481,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal" style="max-width:360px">
     <div class="modal-head"><span class="modal-title" id="deptModalTitle">Add Department</span><button class="modal-close" onclick="closeModal('deptModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="d-name" placeholder="e.g. Sales" onkeydown="handleEnter(event,'saveDept()')" onkeyup="handleEnter(event,'saveDept()')"></div>
+      <div class="form-row"><label class="form-label">Name *</label><input class="fi" id="d-name" placeholder="e.g. Sales"></div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-danger btn-sm hidden" id="dDelBtn" onclick="deleteDept()">Delete</button>
@@ -1493,7 +1496,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal">
     <div class="modal-head"><span class="modal-title" id="objModalTitle">Add Monthly Goal</span><button class="modal-close" onclick="closeModal('objModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Goal Title *</label><input class="fi" id="obj-title" placeholder="e.g. Close 5 new clients…" onkeydown="handleEnter(event,'saveObjective()')" onkeyup="handleEnter(event,'saveObjective()')"></div>
+      <div class="form-row"><label class="form-label">Goal Title *</label><input class="fi" id="obj-title" placeholder="e.g. Close 5 new clients…"></div>
       <div class="form-row"><label class="form-label">Description</label><textarea class="fi" id="obj-desc" rows="2" placeholder="What does success look like?"></textarea></div>
       <div class="form-row-2">
         <div><label class="form-label">Month</label><input class="fi" type="month" id="obj-month"></div>
@@ -1519,7 +1522,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
   <div class="modal" style="max-width:380px">
     <div class="modal-head"><span class="modal-title">Add Habit</span><button class="modal-close" onclick="closeModal('habitModal')">×</button></div>
     <div class="modal-body">
-      <div class="form-row"><label class="form-label">Habit Name *</label><input class="fi" id="h-name" placeholder="e.g. Morning standup, Cold call 10 prospects…" onkeydown="handleEnter(event,'saveHabit()')" onkeyup="handleEnter(event,'saveHabit()')"></div>
+      <div class="form-row"><label class="form-label">Habit Name *</label><input class="fi" id="h-name" placeholder="e.g. Morning standup, Cold call 10 prospects…"></div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost btn-sm" onclick="closeModal('habitModal')">Cancel</button>
@@ -1973,24 +1976,35 @@ function renderDashboard(){
     [`stat-card good`,                           'Done (7d)',       doneT.filter(t=>(t.completed_at||'')>=addDays(td,-7)).length, 'completed']
   ].map(([cls,lbl,val,sub])=>`<div class="${cls}"><div class="stat-lbl">${lbl}</div><div class="stat-val">${val}</div><div class="stat-sub">${sub}</div></div>`).join('');
   const highPri=openT.filter(t=>t.priority==='high').sort((a,b)=>(a.due||'z')<(b.due||'z')?-1:1).slice(0,5);
-  const upCalls=pendC.sort((a,b)=>(a.datetime||'')<(b.datetime||'')?-1:1).slice(0,6);
+  const upCalls=pendC.sort((a,b)=>(a.datetime||'')<(b.datetime||'')?-1:1).slice(0,8);
   const upEv=events.filter(e=>!e.deleted&&e.date>=td).sort((a,b)=>a.date<b.date?-1:1).slice(0,4);
   const h=new Date().getHours();
   const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const frog=openT.filter(t=>t.priority==='high').sort((a,b)=>(a.time_spent||0)-(b.time_spent||0))[0];
-  const soon=t=>t.due&&t.due<=addDays(td,3);
-  const mq=[openT.filter(t=>t.priority==='high'&&soon(t)),openT.filter(t=>t.priority==='high'&&!soon(t)),openT.filter(t=>t.priority!=='high'&&soon(t)),openT.filter(t=>t.priority==='low'&&!soon(t))];
-  const mqhdr=['🔴 Do First','🔵 Schedule','🟡 Delegate','⚫ Eliminate'],mqcls=['q1','q2','q3','q4'];
   const goals=objectives.filter(o=>!o.deleted&&o.month===today().slice(0,7)).slice(0,3);
+  // Eisenhower — fixed: all tasks categorised, none fall through
+  const soon=t=>t.due&&t.due<=addDays(td,3);
+  const mq=[
+    openT.filter(t=>t.priority==='high'&&soon(t)),        // Q1: Urgent+Important
+    openT.filter(t=>t.priority==='high'&&!soon(t)),       // Q2: Not Urgent+Important
+    openT.filter(t=>t.priority==='medium'&&soon(t)),      // Q3: Urgent, medium priority
+    openT.filter(t=>t.priority!=='high'&&!soon(t))        // Q4: All remaining (not high, not soon)
+  ];
+  const mqhdr=['🔴 Do First','🔵 Schedule','🟡 Delegate','⚫ Eliminate'],mqcls=['q1','q2','q3','q4'];
   bento.innerHTML=
-    // Focus card
+    // Focus (left, span 4)
     `<div class="bento-card b-focus"><div class="focus-card">
       <div class="focus-greet">${greet} 👋</div>
       <div class="focus-date mono" style="font-size:10px;color:var(--t4)">${new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'})}</div>
       <div style="font-size:var(--fs-2xs);color:var(--acc3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin:10px 0 5px;font-weight:700">Top Priority</div>
-      <div class="focus-items">${highPri.length?highPri.map(t=>`<div class="focus-item ${t.done?'done':''}" data-action="openTask" data-id="${t.id}"><div class="chk ${t.done?'checked':''}" data-action="toggleTask" data-id="${t.id}"></div><span class="focus-item-title">${esc(t.title)}</span>${t.due?`<span style="font-size:10px;color:var(--t4);margin-left:auto;font-family:var(--mono)">${fmtDate(t.due)}</span>`:''}</div>`).join(''):'<div style="font-size:var(--fs-sm);color:var(--t4);text-align:center;padding:14px 0">No high priority tasks 🎉</div>'}</div>
+      <div class="focus-items">${highPri.length?highPri.map(t=>`<div class="focus-item ${t.done?'done':''}" data-action="openTask" data-id="${t.id}">
+        <div class="chk ${t.done?'checked':''}" data-action="toggleTask" data-id="${t.id}"></div>
+        <span class="focus-item-title">${esc(t.title)}</span>
+        ${t.due?`<span style="font-size:10px;color:var(--t4);margin-left:auto;font-family:var(--mono)">${fmtDate(t.due)}</span>`:''}
+      </div>`).join(''):'<div style="font-size:var(--fs-sm);color:var(--t4);text-align:center;padding:14px 0">No high priority tasks 🎉</div>'}
+      </div>
     </div></div>`+
-    // Eat the frog
+    // Frog (left, span 4)
     `<div class="bento-card b-frog"><div class="frog-card">
       <div class="frog-badge">🐸 Eat the Frog</div>
       <div style="font-size:var(--fs-xs);color:var(--t3);margin-bottom:8px;font-family:var(--mono)">Your hardest task first</div>
@@ -2003,28 +2017,92 @@ function renderDashboard(){
         <div style="font-size:10px;color:var(--t4);margin-top:5px;font-family:var(--mono)">⏱ ${fmtDur(getTaskElapsed(frog.id))}</div>`
       :'<div style="color:var(--t4);font-size:var(--fs-sm)">No high-priority tasks 🎉</div>'}
     </div></div>`+
-    // Mini matrix
-    `<div class="bento-card b-matrix">
-      <div class="card-head"><span class="card-title">🧠 Eisenhower Matrix</span><button class="btn btn-ghost btn-xs" onclick="nav('tasks',g('ni-tasks'))">Full view</button></div>
-      <div class="mini-matrix">${mq.map((q,i)=>`<div class="mini-q ${mqcls[i]}"><div class="mini-q-hdr">${mqhdr[i]}</div>${q.slice(0,4).map(t=>`<div class="mini-task" data-action="openTask" data-id="${t.id}">${esc(t.title)}</div>`).join('')}</div>`).join('')}</div>
-    </div>`+
-    // Calls
-    `<div class="bento-card b-calls">
-      <div class="card-head"><span class="card-title">📞 Calls &amp; Callbacks</span><div style="display:flex;gap:5px"><button class="btn btn-ghost btn-xs" onclick="openCallModal()">+ Add</button><button class="btn btn-ghost btn-xs" onclick="nav('calls',g('ni-calls'))">All</button></div></div>
-      <div class="card-body"><div class="calls-strip">${upCalls.length?upCalls.map(c=>{const od=c.status==='pending'&&c.datetime&&c.datetime.slice(0,10)<td;return`<div class="call-chip ${od?'overdue':''}" data-action="openCall" data-id="${c.id}"><div class="call-chip-name">${esc(c.name)}</div><div class="call-chip-date">${c.datetime?fmtDateTime(c.datetime):'No date'}</div><div class="call-chip-status ${od?'overdue':'pending'}">${od?'● Overdue':'● Pending'}</div></div>`;}).join(''):'<div style="color:var(--t4);font-size:var(--fs-sm);padding:8px 0">No pending calls 🎉</div>'}</div></div>
-    </div>`+
-    // Open tasks
-    `<div class="bento-card b-tasks">
-      <div class="card-head"><span class="card-title">✅ Open Tasks</span><button class="btn btn-ghost btn-xs" onclick="nav('tasks',g('ni-tasks'))">All</button></div>
-      <div style="padding:0">${openT.slice(0,7).map(t=>renderTaskRow(t,true)).join('')||'<div class="empty-state" style="padding:28px"><div class="empty-ico" style="font-size:22px">✅</div><div class="empty-title">All done!</div></div>'}</div>
-    </div>`+
-    // Sidebar
+    // Goals + Events sidebar (left, span 4)
     `<div class="bento-card b-sidebar" style="display:flex;flex-direction:column">
       <div class="card-head"><span class="card-title">🎯 Monthly Goals</span><button class="btn btn-ghost btn-xs" onclick="nav('monthly',g('ni-monthly'))">All</button></div>
-      <div class="card-body" style="padding:9px 13px">${goals.map(o=>{const lk=tasks.filter(t=>t.objective_id===o.id&&!t.deleted).length;const dn=tasks.filter(t=>t.objective_id===o.id&&t.done&&!t.deleted).length;const pct=lk?Math.round(dn/lk*100):0;const c=`var(--${o.color||'acc'})`;return`<div style="margin-bottom:8px;cursor:pointer" data-action="navMonthly"><div style="font-size:var(--fs-xs);font-weight:700;color:var(--t1);margin-bottom:3px">${esc(o.title)}</div><div class="prog-wrap"><div class="prog-bar" style="width:${pct}%;background:${c}"></div></div><div style="font-size:10px;color:var(--t4);margin-top:2px;font-family:var(--mono)">${dn}/${lk} · ${pct}%</div></div>`;}).join('')||'<div style="color:var(--t4);font-size:var(--fs-xs)">No goals this month. <button class="btn btn-ghost btn-xs" onclick="openObjModal()">+ Add</button></div>'}</div>
+      <div class="card-body" style="padding:9px 13px">${goals.map(o=>{
+        const lk=tasks.filter(t=>t.objective_id===o.id&&!t.deleted).length;
+        const dn=tasks.filter(t=>t.objective_id===o.id&&t.done&&!t.deleted).length;
+        const pct=lk?Math.round(dn/lk*100):0;
+        const c=`var(--${o.color||'acc'})`;
+        return`<div style="margin-bottom:8px;cursor:pointer" data-action="navMonthly"><div style="font-size:var(--fs-xs);font-weight:700;color:var(--t1);margin-bottom:3px">${esc(o.title)}</div><div class="prog-wrap"><div class="prog-bar" style="width:${pct}%;background:${c}"></div></div><div style="font-size:10px;color:var(--t4);margin-top:2px;font-family:var(--mono)">${dn}/${lk} · ${pct}%</div></div>`;
+      }).join('')||'<div style="color:var(--t4);font-size:var(--fs-xs)">No goals this month. <button class="btn btn-ghost btn-xs" onclick="openObjModal()">+ Add</button></div>'}</div>
       <div class="card-head" style="border-top:1px solid var(--bdr)"><span class="card-title">🗓 Upcoming Events</span><button class="btn btn-ghost btn-xs" data-action="navSchedule">All</button></div>
       <div class="card-body" style="padding:9px 13px;flex:1">${upEv.map(e=>`<div style="padding:4px 0;border-bottom:1px solid var(--bdr);cursor:pointer;font-size:var(--fs-sm)" data-action="openEvent" data-id="${e.id}"><div style="color:var(--t1);font-weight:600">${esc(e.title)}</div><div style="color:var(--t4);font-family:var(--mono);font-size:10px">${fmtDate(e.date)}${e.time?' '+e.time:''}</div></div>`).join('')||'<div style="color:var(--t4);font-size:var(--fs-xs)">No upcoming events.</div>'}</div>
+    </div>`+
+    // Eisenhower Matrix (right, span 8) — draggable tasks, all quadrants filled
+    `<div class="bento-card b-matrix">
+      <div class="card-head"><span class="card-title">🧠 Eisenhower Matrix</span><button class="btn btn-ghost btn-xs" onclick="nav('tasks',g('ni-tasks'))">All Tasks</button></div>
+      <div class="mini-matrix">${mq.map((q,i)=>`<div class="mini-q ${mqcls[i]}">
+        <div class="mini-q-hdr">${mqhdr[i]} <span style="font-size:9px;color:var(--t4);font-family:var(--mono)">(${q.length})</span></div>
+        ${q.slice(0,5).map(t=>`<div class="mini-task" draggable="true" data-action="openTask" data-id="${t.id}" ondragstart="onTaskDragStart(event,'${t.id}')">
+          <div class="chk ${t.done?'checked':''}" data-action="toggleTask" data-id="${t.id}" style="width:11px;height:11px;flex-shrink:0"></div>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:11px">${esc(t.title)}</span>
+        </div>`).join('')}
+        ${q.length===0?'<div style="font-size:10px;color:var(--t4);padding:4px 2px;font-style:italic">Empty</div>':''}
+        ${q.length>5?`<div style="font-size:9px;color:var(--t4);padding:2px;font-family:var(--mono)">+${q.length-5} more</div>`:''}
+      </div>`).join('')}</div>
+    </div>`+
+    // Calls — with one-click done ✓ button on each chip
+    `<div class="bento-card b-calls">
+      <div class="card-head"><span class="card-title">📞 Calls &amp; Callbacks</span>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-ghost btn-xs" onclick="openCallModal()">+ Add</button>
+          <button class="btn btn-ghost btn-xs" onclick="nav('calls',g('ni-calls'))">All</button>
+        </div>
+      </div>
+      <div class="card-body"><div class="calls-strip">${upCalls.length?upCalls.map(c=>{
+        const od=c.status==='pending'&&c.datetime&&c.datetime.slice(0,10)<td;
+        return`<div class="call-chip ${od?'overdue':''}" data-action="openCall" data-id="${c.id}">
+          <div class="call-chip-name">${esc(c.name)}</div>
+          <div class="call-chip-date">${c.datetime?fmtDateTime(c.datetime):'No date'}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:3px">
+            <div class="call-chip-status ${od?'overdue':'pending'}">${od?'● Overdue':'● Pending'}</div>
+            <button class="btn btn-xs" style="background:var(--grn-l);color:var(--grn);border:none;font-size:10px;padding:2px 6px;border-radius:3px;line-height:1" data-action="markCallDone" data-id="${c.id}" title="Mark done">✓ Done</button>
+          </div>
+        </div>`;
+      }).join(''):'<div style="color:var(--t4);font-size:var(--fs-sm);padding:8px 0">No pending calls 🎉</div>'}</div></div>
+    </div>`+
+    // Open Tasks (right, span 8) — draggable, + Add Task, ✓ done button
+    `<div class="bento-card b-tasks">
+      <div class="card-head">
+        <span class="card-title">✅ Open Tasks <span style="font-size:10px;color:var(--t4);font-family:var(--mono)">(${openT.length})</span></span>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-primary btn-xs" onclick="openTaskModal()">+ Add Task</button>
+          <button class="btn btn-ghost btn-xs" onclick="nav('tasks',g('ni-tasks'))">All</button>
+        </div>
+      </div>
+      <div style="padding:0">${renderDashTaskList(openT)}</div>
     </div>`;
+}
+
+function renderDashTaskList(openT){
+  const td=today();
+  const sorted=[...openT].sort((a,b)=>{
+    const aOD=a.due&&a.due<td;const bOD=b.due&&b.due<td;
+    if(aOD&&!bOD)return -1;if(!aOD&&bOD)return 1;
+    if(a.due===td&&b.due!==td)return -1;if(a.due!==td&&b.due===td)return 1;
+    const po={high:0,medium:1,low:2};
+    return(po[a.priority]||1)-(po[b.priority]||1);
+  }).slice(0,10);
+  if(!sorted.length)return'<div class="empty-state" style="padding:24px"><div class="empty-ico" style="font-size:22px">✅</div><div class="empty-title">All done!</div></div>';
+  const td2=today();
+  return sorted.map(t=>{
+    const od=!t.done&&t.due&&t.due<td2;
+    const pcls={high:'high',medium:'medium',low:'low'}[t.priority]||'medium';
+    return`<div class="tr task-draggable" draggable="true" data-action="openTask" data-id="${t.id}" ondragstart="onTaskDragStart(event,'${t.id}')">
+      <div class="chk ${t.done?'checked':''}" data-action="toggleTask" data-id="${t.id}"></div>
+      <div class="tr-body">
+        <div class="tr-title">${esc(t.title)}</div>
+        <div class="tr-meta">
+          <span class="pbadge ${pcls}">${t.priority||'medium'}</span>
+          ${t.due?`<span class="tr-meta-item ${od?'overdue':''}">${od?'⚠ ':''}${fmtDate(t.due)}</span>`:''}
+          ${t.person_id?`<span class="tr-meta-item">👤 ${esc((people.find(p=>p.id===t.person_id)||{}).name||'')}</span>`:''}
+        </div>
+      </div>
+      <button class="tr-action" style="color:var(--grn);font-size:16px;font-weight:700;padding:0 6px" data-action="toggleTask" data-id="${t.id}" title="Mark done">✓</button>
+    </div>`;
+  }).join('')+(openT.length>10?`<div style="padding:8px 14px;font-size:var(--fs-xs);color:var(--t4);text-align:center;font-family:var(--mono)">+${openT.length-10} more — <span style="color:var(--acc3);cursor:pointer" onclick="nav('tasks',g('ni-tasks'))">view all</span></div>`:'');
 }
 
 /* ═══ renderTaskRow — template literal, clean ═══ */
@@ -2099,7 +2177,7 @@ function toggleTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.done=!t.
 function archiveTask(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.archived=true;t.updated_at=now();persist();renderTasks();}
 function moveSomeday(id){const t=tasks.find(x=>x.id===id);if(!t)return;t.someday=true;t.updated_at=now();persist();renderTasks();toast('Moved to Someday.','info');}
 function autoFillDeptFromPerson(){const pid=g('t-person').value;if(!pid)return;const p=people.find(x=>x.id===pid);if(p&&p.dept){const sel=g('t-dept');if(sel)for(let i=0;i<sel.options.length;i++)if(sel.options[i].value===p.dept){sel.selectedIndex=i;break;}}}
-function openTaskModal(id){editingTaskId=id||null;const t=id?tasks.find(x=>x.id===id):null;g('taskModalTitle').textContent=t?'Edit Task':'New Task';g('tDelBtn').classList.toggle('hidden',!t);g('t-title').value=t?.title||'';g('t-due').value=t?.due||'';g('t-start').value=t?.start_date||'';g('t-notes').value=t?.notes||'';g('t-priority').value=t?.priority||'medium';g('t-someday').checked=!!t?.someday;const rec=g('t-recurring'),freq=g('t-recur-freq');rec.checked=!!t?.recurring;freq.style.display=rec.checked?'':'none';if(t?.recur_freq)freq.value=t.recur_freq;populateSel('t-project',projects.filter(p=>!p.deleted),p=>p.id,p=>p.name,t?.project_id||'');populateSel('t-person',people.filter(p=>!p.deleted),p=>p.id,p=>p.name,t?.person_id||'');populateSel('t-dept',depts.map(d=>({id:d,name:d})),d=>d.id,d=>d.name,t?.dept||'');populateSel('t-customer',customers.filter(c=>!c.deleted),c=>c.id,c=>c.name,t?.customer_id||'');populateSel('t-objective',objectives.filter(o=>!o.deleted),o=>o.id,o=>o.title,t?.objective_id||'');openModal('taskModal');setTimeout(()=>g('t-title').focus(),50);}
+function openTaskModal(id){editingTaskId=id||null;const t=id?tasks.find(x=>x.id===id):null;g('taskModalTitle').textContent=t?'Edit Task':'New Task';g('tDelBtn').classList.toggle('hidden',!t);g('t-title').value=t?.title||'';g('t-due').value=t?.due||today();g('t-start').value=t?.start_date||'';g('t-notes').value=t?.notes||'';g('t-priority').value=t?.priority||'medium';g('t-someday').checked=!!t?.someday;const rec=g('t-recurring'),freq=g('t-recur-freq');rec.checked=!!t?.recurring;freq.style.display=rec.checked?'':'none';if(t?.recur_freq)freq.value=t.recur_freq;populateSel('t-project',projects.filter(p=>!p.deleted),p=>p.id,p=>p.name,t?.project_id||'');populateSel('t-person',people.filter(p=>!p.deleted),p=>p.id,p=>p.name,t?.person_id||'');populateSel('t-dept',depts.map(d=>({id:d,name:d})),d=>d.id,d=>d.name,t?.dept||'');populateSel('t-customer',customers.filter(c=>!c.deleted),c=>c.id,c=>c.name,t?.customer_id||'');populateSel('t-objective',objectives.filter(o=>!o.deleted),o=>o.id,o=>o.title,t?.objective_id||'');openModal('taskModal');setTimeout(()=>g('t-title').focus(),50);}
 function saveTask(){const title=g('t-title').value.trim();if(!title){toast('Title required.','warning');return;}const n=now();const d={title,due:g('t-due').value||null,start_date:g('t-start').value||null,priority:g('t-priority').value,notes:g('t-notes').value,project_id:g('t-project').value||null,person_id:g('t-person').value||null,dept:g('t-dept').value||'',customer_id:g('t-customer').value||null,objective_id:g('t-objective').value||null,someday:g('t-someday').checked,recurring:g('t-recurring').checked,recur_freq:g('t-recurring').checked?g('t-recur-freq').value:null,updated_at:n};if(editingTaskId){const t=tasks.find(x=>x.id===editingTaskId);if(t){Object.assign(t,d);audit('task_updated',title);}}else{tasks.push({id:uid(),created_at:n,done:false,archived:false,deleted:false,time_spent:0,timer_running:false,...d});audit('task_created',title);}closeModal('taskModal');persist();renderView(currentView);toast(editingTaskId?'Task updated.':'Task created.','success');}
 function deleteTask(){if(!editingTaskId)return;closeModal('taskModal');showConfirm('Move task to trash?',()=>{const t=tasks.find(x=>x.id===editingTaskId);if(t){t.deleted=true;t.updated_at=now();trash.push({...t,trashed_at:now(),type:'task'});audit('task_deleted',t.title);persist();renderView(currentView);toast('Moved to trash.','info');}},'Delete Task','Delete');}
 function toggleMatrix(){_matrixOpen=!_matrixOpen;g('matrixGrid').classList.toggle('open',_matrixOpen);g('matrixCaret').style.transform=_matrixOpen?'rotate(90deg)':'';if(_matrixOpen)renderMatrix();}
@@ -2110,7 +2188,7 @@ let callFilter='pending',editingCallId=null;
 function setCallFilter(f,el){callFilter=f;gsa('#view-calls .ftab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');renderCalls();}
 function renderCalls(){const td=today();const search=(g('callSearch')?.value||'').toLowerCase();const sort=g('callSort')?.value||'date';let list=calls.filter(c=>!c.deleted);if(callFilter==='pending')list=list.filter(c=>c.status==='pending');else if(callFilter==='done')list=list.filter(c=>c.status==='done');if(search)list=list.filter(c=>(c.name||'').toLowerCase().includes(search)||(c.notes||'').toLowerCase().includes(search));list.sort((a,b)=>sort==='name'?(a.name||'').localeCompare(b.name||''):(a.datetime||'z')<(b.datetime||'z')?-1:1);const el=g('callList'),empty=g('callEmpty');if(!list.length){el.innerHTML='';empty.classList.remove('hidden');return;}empty.classList.add('hidden');el.innerHTML=list.map(c=>{const od=c.status==='pending'&&c.datetime&&c.datetime.slice(0,10)<td;const ini=(c.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();return`<div class="call-card ${od?'overdue':''} ${c.status==='done'?'done':''}" data-action="openCall" data-id="${c.id}"><div class="call-ava">${ini}</div><div class="call-info"><div class="call-name">${esc(c.name)}</div><div class="call-meta">${c.phone?esc(c.phone)+' · ':''}${c.datetime?fmtDateTime(c.datetime):'No date'}</div>${c.notes?`<div class="call-notes-prev">${esc(c.notes)}</div>`:''}</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0"><span class="sbadge ${od?'overdue':c.status}">${od?'Overdue':c.status}</span><div class="call-actions-hover">${c.status==='pending'?`<button class="btn btn-ghost btn-xs" data-action="markCallDone" data-id="${c.id}">✓ Done</button>`:''}</div></div></div>`;}).join('');}
 function markCallDone(id){const c=calls.find(x=>x.id===id);if(!c)return;c.status='done';c.updated_at=now();audit('call_done',c.name);persist();renderCalls();toast('Call done.','success');}
-function openCallModal(id){editingCallId=id||null;const c=id?calls.find(x=>x.id===id):null;g('callModalTitle').textContent=c?'Edit Call':'New Call';g('cDelBtn').classList.toggle('hidden',!c);g('c-name').value=c?.name||'';g('c-phone').value=c?.phone||'';g('c-datetime').value=c?.datetime||'';g('c-notes').value=c?.notes||'';g('c-status').value=c?.status||'pending';populateSel('c-customer',customers.filter(x=>!x.deleted),x=>x.id,x=>x.name,c?.customer_id||'');populateSel('c-person',people.filter(x=>!x.deleted),x=>x.id,x=>x.name,c?.person_id||'');openModal('callModal');setTimeout(()=>g('c-name').focus(),50);}
+function openCallModal(id){editingCallId=id||null;const c=id?calls.find(x=>x.id===id):null;g('callModalTitle').textContent=c?'Edit Call':'New Call';g('cDelBtn').classList.toggle('hidden',!c);g('c-name').value=c?.name||'';g('c-phone').value=c?.phone||'';g('c-datetime').value=c?.datetime||(today()+'T09:00');g('c-notes').value=c?.notes||'';g('c-status').value=c?.status||'pending';populateSel('c-customer',customers.filter(x=>!x.deleted),x=>x.id,x=>x.name,c?.customer_id||'');populateSel('c-person',people.filter(x=>!x.deleted),x=>x.id,x=>x.name,c?.person_id||'');openModal('callModal');setTimeout(()=>g('c-name').focus(),50);}
 function saveCall(){const name=g('c-name').value.trim();if(!name){toast('Name required.','warning');return;}const n=now();const d={name,phone:g('c-phone').value,datetime:g('c-datetime').value,notes:g('c-notes').value,status:g('c-status').value,customer_id:g('c-customer').value||null,person_id:g('c-person').value||null,updated_at:n};if(editingCallId){const c=calls.find(x=>x.id===editingCallId);if(c){Object.assign(c,d);audit('call_updated',name);}}else{calls.push({id:uid(),created_at:n,deleted:false,...d});audit('call_created',name);}closeModal('callModal');persist();renderView(currentView);toast(editingCallId?'Call updated.':'Call added.','success');}
 function deleteCall(){if(!editingCallId)return;closeModal('callModal');showConfirm('Move call to trash?',()=>{const c=calls.find(x=>x.id===editingCallId);if(c){c.deleted=true;c.updated_at=now();trash.push({...c,trashed_at:now(),type:'call'});audit('call_deleted',c.name);persist();renderView(currentView);}},'Delete Call','Delete');}
 
@@ -2502,7 +2580,7 @@ const WIZ_TOTAL=5;
 function openWeeklyWizard(){_wizStep=0;_wizCaptures=[];renderWizStep();openModal('weeklyWizard');}
 function wizNav(dir){if(dir>0&&_wizStep===WIZ_TOTAL-1){closeModal('weeklyWizard');toast('Weekly Review complete! 🎉','success');return;}_wizStep=Math.max(0,Math.min(WIZ_TOTAL-1,_wizStep+dir));renderWizStep();}
 function renderWizStep(){const pct=Math.round(_wizStep/(WIZ_TOTAL-1)*100);g('wizPBar').style.width=pct+'%';g('wizStepLbl').textContent=`Step ${_wizStep+1} of ${WIZ_TOTAL}`;g('wizBackBtn').style.display=_wizStep===0?'none':'';g('wizNextBtn').textContent=_wizStep===WIZ_TOTAL-1?'✓ Finish':'Next →';const td=today();const overdue=tasks.filter(t=>!t.done&&!t.archived&&!t.deleted&&!t.someday&&t.due&&t.due<td);const done7=tasks.filter(t=>t.done&&!t.deleted&&(t.completed_at||'')>=addDays(td,-7));const open=tasks.filter(t=>!t.done&&!t.archived&&!t.deleted&&!t.someday);const nxWeek=[];for(let i=0;i<7;i++){const d=addDays(td,i+1);nxWeek.push({date:d,label:new Date(d+'T12:00:00').toLocaleDateString('en-IN',{weekday:'short'})+' '+new Date(d+'T12:00:00').getDate(),cnt:tasks.filter(t=>!t.done&&!t.deleted&&t.due===d).length});}const maxLoad=Math.max(...nxWeek.map(d=>d.cnt),1);const steps=[
-{title:'🧠 Brain Dump',sub:'Empty your mind — capture any tasks, ideas, or commitments not yet logged.',content:`<div style="display:flex;gap:8px;margin-bottom:12px"><input class="fi" id="wizCapture" placeholder="What's on your mind? Press Enter to add" style="flex:1" onkeydown="if(event.key==='Enter')wizAddCapture()"><button class="btn btn-primary btn-sm" onclick="wizAddCapture()">Add</button></div><div id="wizCaptureList">${_wizCaptures.map(c=>`<div class="wiz-inbox-item"><span style="color:var(--grn)">✓</span><span style="font-size:var(--fs-sm);color:var(--t2)">${esc(c)}</span></div>`).join('')}</div>`},
+{title:'🧠 Brain Dump',sub:'Empty your mind — capture any tasks, ideas, or commitments not yet logged.',content:`<div style="display:flex;gap:8px;margin-bottom:12px"><input class="fi" id="wizCapture" placeholder="What's on your mind? Press Enter to add" style="flex:1" onkeydown="handleEnter(event,'wizAddCapture')"><button class="btn btn-primary btn-sm" onclick="wizAddCapture()">Add</button></div><div id="wizCaptureList">${_wizCaptures.map(c=>`<div class="wiz-inbox-item"><span style="color:var(--grn)">✓</span><span style="font-size:var(--fs-sm);color:var(--t2)">${esc(c)}</span></div>`).join('')}</div>`},
 {title:'🔍 Review Last Week',sub:'Celebrate wins and acknowledge what slipped.',content:`<div class="stat-row" style="grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px"><div class="stat-card good"><div class="stat-lbl">Done (7d)</div><div class="stat-val">${done7.length}</div></div><div class="stat-card ${overdue.length>0?'danger':'good'}"><div class="stat-lbl">Overdue</div><div class="stat-val">${overdue.length}</div></div></div>${overdue.length?`<div style="font-size:var(--fs-sm);font-weight:700;color:var(--red);margin-bottom:8px">⚠ Overdue — reschedule:</div>${overdue.slice(0,6).map(t=>`<div class="wiz-inbox-item"><div class="chk" data-action="toggleTask" data-id="${t.id}"></div><span style="font-size:var(--fs-sm);color:var(--t2);flex:1">${esc(t.title)}</span><input type="date" class="fi" value="${t.due||''}" style="width:130px;padding:3px 6px;font-size:11px" onchange="reschedTask('${t.id}',this.value)"></div>`).join('')}`:'<div style="color:var(--grn);font-size:var(--fs-sm)">✓ No overdue tasks — great work!</div>'}`},
 {title:'🎯 Align with Goals',sub:"Link open tasks to this month's objectives.",content:`<div style="font-size:var(--fs-sm);color:var(--t3);margin-bottom:12px;font-family:var(--mono)">${open.filter(t=>!t.objective_id).length} tasks without a monthly goal</div>${objectives.filter(o=>!o.deleted&&o.month===td.slice(0,7)).map(o=>{const lk=tasks.filter(t=>t.objective_id===o.id&&!t.done&&!t.deleted).length;return`<div style="padding:9px 12px;background:var(--surf2);border-radius:var(--rs);margin-bottom:8px"><div style="font-weight:700;color:var(--t1);font-size:var(--fs-sm)">${esc(o.title)}</div><div style="font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">${lk} tasks linked</div></div>`;}).join('')||`<div style="color:var(--t4);font-size:var(--fs-sm)">No goals set. <button class="btn btn-ghost btn-xs" onclick="closeModal('weeklyWizard');openObjModal()">+ Add Goal</button></div>`}`},
 {title:'📊 Next Week Load Balance',sub:'Check capacity. Aim for balance across days.',content:`<div class="wiz-load-bar-wrap">${nxWeek.map(d=>{const load=d.cnt/maxLoad*100;const c=load>70?'var(--red)':load>40?'var(--amb)':'var(--grn)';return`<div class="wiz-day-row"><div class="wiz-day-name">${d.label}</div><div class="wiz-day-bar-wrap"><div class="wiz-day-bar" style="width:${load}%;background:${c}"></div></div><div class="wiz-day-count">${d.cnt} tasks${load>70?' ⚠':''}</div></div>`;}).join('')}</div><div style="margin-top:12px;font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">Use Daily/Weekly Plan to drag tasks between days.</div>`},
@@ -2535,30 +2613,69 @@ function setupRecurring(){const td=today();if(localStorage.getItem('c51_recurChe
 function scheduleShutdownPrompt(){const check=()=>{const h=new Date().getHours(),td=today();if(h>=18&&localStorage.getItem('c51_shutdown')!==td){const od=tasks.filter(t=>!t.done&&!t.deleted&&!t.someday&&t.due&&t.due<=td).length;if(od>0){showConfirm(`🌇 End of day — ${od} task${od>1?'s':''} still open. Review now?`,()=>nav('tasks',g('ni-tasks')),'Daily Shutdown','Review Tasks');localStorage.setItem('c51_shutdown',td);}}};setTimeout(check,3000);setInterval(check,30*60*1000);}
 
 /* ═══ ENTER KEY — cross-platform (mobile virtual keyboard safe) ═══ */
+/* ═══ ENTER KEY — modal-level delegation ═══ */
+// Maps modal id → save function name. Enter in any non-textarea input saves.
+const MODAL_ENTER_MAP={
+  taskModal:'saveTask',
+  callModal:'saveCall',
+  projModal:'saveProject',
+  eventModal:'saveEvent',
+  personModal:'savePerson',
+  custModal:'saveCustomer',
+  deptModal:'saveDept',
+  objModal:'saveObjective',
+  habitModal:'saveHabit',
+  noteModal:'saveNoteModal',
+};
 let _lastEnterTime=0;
-function handleEnter(e, fnName){
+function handleEnter(e,fnName){
+  // Legacy per-field handler — kept for backwards compat
   const isEnter=e.key==='Enter'||e.keyCode===13||e.which===13;
   if(!isEnter)return;
-  // Dedupe: keydown + keyup both fire, only run once per 150ms
   const t=Date.now();
-  if(t-_lastEnterTime<150)return;
+  if(t-_lastEnterTime<200)return;
   _lastEnterTime=t;
-  e.preventDefault();
-  e.stopPropagation();
-  // Resolve function by name string e.g. 'saveTask()'
+  e.preventDefault();e.stopPropagation();
   const name=fnName.replace(/\(\)$/,'');
   const fn=window[name];
   if(typeof fn==='function')fn();
 }
+// Global Enter delegation for all modal inputs
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'&&e.keyCode!==13)return;
+  if(e.target.tagName==='TEXTAREA')return; // let textarea handle newlines
+  if(e.target.tagName==='BUTTON')return;   // let button handle click
+  if(e.target.tagName==='SELECT')return;   // let select handle change
+  // Find open modal
+  const openModal=document.querySelector('.modal-overlay.open');
+  if(!openModal)return;
+  const modalId=openModal.id;
+  const fnName=MODAL_ENTER_MAP[modalId];
+  if(!fnName)return;
+  const t=Date.now();
+  if(t-_lastEnterTime<200)return;
+  _lastEnterTime=t;
+  e.preventDefault();
+  const fn=window[fnName];
+  if(typeof fn==='function')fn();
+});
 
 /* ═══ KEYBOARD SHORTCUTS ═══ */
 let _gPressed=false,_gTimer=null;
 document.addEventListener('keydown',e=>{
   if(g('lockScreen').style.display==='none'){
-    if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)&&e.key!=='Escape')return;
+    const inInput=['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName);
+    // Ctrl/Meta shortcuts always work even when typing in an input
     if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openCmd();return;}
     if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&e.key==='z'){e.preventDefault();toggleZen();return;}
     if((e.ctrlKey||e.metaKey)&&e.key==='a'){e.preventDefault();toggleAIPanel();return;}
+    // Escape always works
+    if(e.key==='Escape'){
+      gsa('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+      closeQP();if(_zenActive)toggleZen();return;
+    }
+    // Rest of shortcuts only fire when NOT in a text input
+    if(inInput)return;
     if(e.key==='['){toggleSidebar();return;}
     if(e.key==='?'){openShortcuts();return;}
     if(!e.ctrlKey&&!e.metaKey&&!e.altKey){
@@ -2568,7 +2685,6 @@ document.addEventListener('keydown',e=>{
     }
     if(e.key==='g'){_gPressed=true;clearTimeout(_gTimer);_gTimer=setTimeout(()=>{_gPressed=false;},1500);return;}
     if(_gPressed){_gPressed=false;clearTimeout(_gTimer);const gmap={d:['dashboard','ni-dashboard'],t:['tasks','ni-tasks'],c:['calls','ni-calls'],n:['notes','ni-notes'],s:['schedule','ni-schedule'],p:['planning','ni-planning'],a:['analytics','ni-analytics'],m:['monthly','ni-monthly']};const target=gmap[e.key.toLowerCase()];if(target)nav(target[0],g(target[1]));return;}
-    if(e.key==='Escape'){gsa('.modal-overlay.open').forEach(m=>m.classList.remove('open'));closeQP();if(_zenActive)toggleZen();}
   }
 });
 
