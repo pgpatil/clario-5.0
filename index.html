@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Clario 5.1</title>
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" id="themeColorMeta" content="#0a0a0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Clario">
+<meta name="application-name" content="Clario">
+<link rel="manifest" id="pwaManifestLink">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -655,6 +661,7 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
       <button class="tb-btn" onclick="openWeeklyWizard()" title="Weekly Review">📋 <span class="tb-label">Weekly Review</span></button>
       <button class="tb-btn" onclick="toggleZen()" id="zenBtn" title="Zen Mode [Ctrl+Z]">🧘 <span class="tb-label">Zen</span></button>
       <button class="tb-btn" onclick="toggleAIPanel()" id="aiBtn" title="AI Assistant [Ctrl+A]">🤖 <span class="tb-label">AI</span></button>
+      <button class="tb-btn" id="installBtn" onclick="installPWA()" title="Install Clario as desktop app" style="display:none;color:var(--acc3);border-color:var(--acc-l)">⊞ <span class="tb-label">Install App</span></button>
       <button class="tb-icon" onclick="openCodeView()" title="View / copy source code" style="font-size:14px">⟨/⟩</button>
       <div id="syncPill" onclick="nav('admin',document.getElementById('ni-admin'))">
         <span class="sync-dot" id="syncDot2"></span><span id="syncPillLbl">Not linked</span>
@@ -995,6 +1002,35 @@ input.fi[type="text"],input.fi[type="search"],input.fi{-webkit-user-select:text;
                   <button class="btn btn-ghost btn-sm" onclick="loadFromDisk()">⬇ Pull</button>
                 </div>
                 <div style="margin-top:9px;font-size:var(--fs-xs);color:var(--t4);line-height:1.6;font-family:var(--mono)">Links to a local OneDrive folder. Atomic <span style="color:var(--acc3)">db.tmp → db.json</span> write.</div>
+              </div>
+            </div>
+          </div>
+          <!-- INSTALL APP AS PWA -->
+          <div class="card" id="installCard">
+            <div class="card-head"><span class="card-title">⊞ Install as Desktop App</span></div>
+            <div class="card-body">
+              <div id="installAvailablePanel" style="display:none">
+                <div style="font-size:var(--fs-sm);color:var(--t2);margin-bottom:12px;line-height:1.6">
+                  Install Clario as a standalone Windows app. It will appear in your taskbar and Start menu — no browser chrome, no tabs. Works fully offline.
+                </div>
+                <button class="btn btn-primary" onclick="installPWA()" id="installBtnSettings">
+                  ⊞ Install Clario App
+                </button>
+                <div style="margin-top:9px;font-size:var(--fs-xs);color:var(--t4);font-family:var(--mono)">
+                  Works in Chrome and Edge on Windows, Mac, Android.
+                </div>
+              </div>
+              <div id="installUnavailablePanel">
+                <div style="font-size:var(--fs-sm);color:var(--t3);line-height:1.7">
+                  <div id="installStatusMsg" style="font-family:var(--mono);font-size:var(--fs-xs);color:var(--t4);margin-bottom:10px">Checking install availability…</div>
+                  <strong style="color:var(--t2)">To install Clario as a desktop app:</strong><br>
+                  1. Open this file in <strong>Chrome</strong> or <strong>Edge</strong> on Windows<br>
+                  2. The <strong style="color:var(--acc3)">⊞ Install App</strong> button will appear in the top bar<br>
+                  3. Click it and follow the prompt — done in 2 seconds<br><br>
+                  <div style="background:var(--surf2);border-radius:var(--rs);padding:9px 12px;font-size:var(--fs-xs);color:var(--t4)">
+                    💡 <strong>Alternative:</strong> In Chrome/Edge, click the <strong>⊕ icon</strong> in the address bar, or go to Menu → <em>Save and share</em> → <em>Install page as app</em>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2153,6 +2189,7 @@ function renderAdmin(){
     inp.value='';
     inp.placeholder=_gistToken?'ghp_••••••••••••• (saved — paste new token to update)':'ghp_xxxxxxxxxxxxxxxxxxxx';
   }
+  checkInstallState();
   renderAuditLog();
 }
 function renderAuditLog(){const el=g('auditLog');if(!el)return;const items=[...auditLog].reverse().slice(0,60);el.innerHTML=items.length?items.map(a=>`<div class="audit-row"><span class="audit-time">${new Date(a.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span><span class="audit-action"><strong>${esc(a.action)}</strong>${a.detail?' — '+esc(a.detail):''}</span></div>`).join(''):'<div class="empty-state" style="padding:20px"><div class="empty-sub">No audit entries yet.</div></div>';}
@@ -2227,10 +2264,135 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* ═══ PWA ═══ */
-if('serviceWorker' in navigator){
-  const sw=`self.addEventListener('install',e=>{self.skipWaiting();});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>new Response('Offline',{status:503})));});`;
-  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+/* ═══ PWA — Manifest + Install Prompt ═══ */
+let _deferredInstallPrompt=null;
+
+// Inject web app manifest as blob URL (works for local files too)
+(function injectManifest(){
+  const icons=[{
+    src:`data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%236c63ff'/><stop offset='1' stop-color='%23a855f7'/></linearGradient></defs><rect width='512' height='512' rx='120' fill='url(%23g)'/><path d='M290 60 L160 256 H256 L210 452 L380 236 H284 L330 60 Z' fill='white'/></svg>`,
+    sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'
+  }];
+  const manifest={
+    name:'Clario 5.1',
+    short_name:'Clario',
+    description:'Obsidian Command — Personal Productivity System',
+    start_url:window.location.href,
+    display:'standalone',
+    background_color:'#0a0a0f',
+    theme_color:'#6c63ff',
+    orientation:'any',
+    icons
+  };
+  try{
+    const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+    const url=URL.createObjectURL(blob);
+    const link=document.getElementById('pwaManifestLink');
+    if(link)link.href=url;
+  }catch(e){}
+})();
+
+// Service worker — cache-first for offline use
+(function registerSW(){
+  if(!('serviceWorker' in navigator))return;
+  const sw=`
+const CACHE='clario-v1';
+const HTML=self.location.href.replace('?clario-sw','');
+self.addEventListener('install',e=>{
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c=>c.add(HTML)).catch(()=>{}));
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.url===HTML||e.request.url.startsWith(HTML)){
+    e.respondWith(caches.match(HTML).then(r=>r||fetch(e.request)));
+  }
+});`;
+  try{
+    const blob=new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(blob))
+      .then(reg=>{ if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'}); })
+      .catch(()=>{});
+  }catch(e){}
+})();
+
+// Capture install prompt (fires in Chrome/Edge when PWA criteria met)
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _deferredInstallPrompt=e;
+  // Show install button in topbar
+  const btn=g('installBtn');
+  if(btn)btn.style.display='';
+  // Update settings panel
+  updateInstallUI(true);
+  toast('⊞ Clario can be installed as a desktop app!','info');
+});
+
+// Fired after user installs
+window.addEventListener('appinstalled',()=>{
+  _deferredInstallPrompt=null;
+  const btn=g('installBtn');
+  if(btn)btn.style.display='none';
+  updateInstallUI(false,'Installed ✓ — check your taskbar or Start menu.');
+  toast('Clario installed as app ✓','success');
+});
+
+function updateInstallUI(available, msg){
+  const avPanel=g('installAvailablePanel');
+  const unPanel=g('installUnavailablePanel');
+  const statusMsg=g('installStatusMsg');
+  if(!avPanel||!unPanel)return;
+  avPanel.style.display=available?'':'none';
+  unPanel.style.display=available?'none':'';
+  if(statusMsg&&msg)statusMsg.textContent=msg;
+}
+
+async function installPWA(){
+  if(!_deferredInstallPrompt){
+    // Already installed or not in a supported browser
+    const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+    if(isStandalone){
+      toast('Clario is already running as an installed app ✓','success');
+    } else {
+      toast('Open in Chrome or Edge on Windows to install as an app.','warning');
+    }
+    return;
+  }
+  _deferredInstallPrompt.prompt();
+  const {outcome}=await _deferredInstallPrompt.userChoice;
+  if(outcome==='accepted'){
+    _deferredInstallPrompt=null;
+    const btn=g('installBtn');
+    if(btn)btn.style.display='none';
+    updateInstallUI(false,'Installing…');
+  }
+}
+
+// Check initial state when settings opens
+function checkInstallState(){
+  const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  const statusEl=g('installStatusMsg');
+  if(isStandalone){
+    updateInstallUI(false,'✓ Already running as installed app.');
+  } else if(_deferredInstallPrompt){
+    updateInstallUI(true);
+  } else {
+    // Determine why prompt isn't available
+    const isChrome=/Chrome/.test(navigator.userAgent)&&!/Edg/.test(navigator.userAgent);
+    const isEdge=/Edg/.test(navigator.userAgent);
+    const isFirefox=/Firefox/.test(navigator.userAgent);
+    const isSafari=/Safari/.test(navigator.userAgent)&&!isChrome;
+    let msg='';
+    if(isFirefox)msg='Firefox does not support PWA install. Use Chrome or Edge.';
+    else if(isSafari&&!isMobile())msg='Safari on Mac: use File → Add to Dock, or try Chrome/Edge.';
+    else if(isSafari&&isMobile())msg='On iOS: tap Share → Add to Home Screen.';
+    else msg='Open this file in Chrome or Edge to see the install prompt.';
+    if(statusEl)statusEl.textContent=msg;
+    updateInstallUI(false, msg);
+  }
 }
 
 /* ═══ FIELD VISIBILITY & PASTE (mobile-safe) ═══ */
